@@ -1,0 +1,3 @@
+packageId,type,loginEmail,loginUsername,password,activationCode,recoveryInfo,additionalInformation,status,expiresAt
+1,ACCOUNT,demo@example.com,demo_user,ChangeThisPassword,,,Tài khoản mẫu,AVAILABLE,2027-12-31
+2,LICENSE_KEY,,,,HP-DEMO-KEY-0001,,Mã kích hoạt mẫu,AVAILABLE,2027-12-31

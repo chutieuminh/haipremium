@@ -1,0 +1,172 @@
+export const categories = [
+  {
+    id: 'study',
+    name: 'Học tập',
+    slug: 'hoc-tap',
+    icon: 'GraduationCap',
+    description: 'Ngoại ngữ, kỹ năng và kho học liệu chất lượng.',
+    accent: '#23b26d',
+  },
+  {
+    id: 'ai',
+    name: 'AI - Trí tuệ nhân tạo',
+    slug: 'ai-tri-tue-nhan-tao',
+    icon: 'Sparkles',
+    description: 'Trợ lý AI, tạo ảnh, video, giọng nói và âm nhạc.',
+    accent: '#7c5cff',
+  },
+  {
+    id: 'creative',
+    name: 'Thiết kế - Sáng tạo',
+    slug: 'thiet-ke-sang-tao',
+    icon: 'Palette',
+    description: 'Bộ công cụ thiết kế, dựng phim và sáng tạo nội dung.',
+    accent: '#ff6b6b',
+  },
+  {
+    id: 'work',
+    name: 'Phục vụ công việc',
+    slug: 'phuc-vu-cong-viec',
+    icon: 'BriefcaseBusiness',
+    description: 'Năng suất, lưu trữ, họp trực tuyến và bảo mật.',
+    accent: '#1689d8',
+  },
+];
+
+const rows = [
+  ['Duolingo', 'duolingo', 'duolingo.png', 'study', 79000, 129000, 4.9, 1260, 'Bán chạy'],
+  ['ELSA Speak', 'elsa-speak', 'elsa.png', 'study', 149000, 249000, 4.8, 826, 'Giảm 40%'],
+  ['Grammarly Premium', 'grammarly-premium', 'grammarly.png', 'study', 99000, 189000, 4.9, 1834, 'Bán chạy'],
+  ['QuillBot Premium', 'quillbot-premium', 'quillbot.png', 'study', 89000, 169000, 4.7, 645, 'Ưu đãi'],
+  ['Memrise Pro', 'memrise-pro', 'memrise.png', 'study', 69000, 119000, 4.6, 322, 'Mới'],
+  ['Quizizz Super', 'quizizz-super', 'quizizz.png', 'study', 79000, 149000, 4.7, 438, 'Ưu đãi'],
+  ['Scribd Premium', 'scribd-premium', 'scribd.png', 'study', 99000, 179000, 4.8, 708, 'Bán chạy'],
+  ['Chegg Study', 'chegg-study', 'chegg.png', 'study', 139000, 239000, 4.6, 281, 'Giảm giá'],
+  ['Lingokids Plus', 'lingokids-plus', 'lingokids.png', 'study', 119000, 199000, 4.8, 386, 'Phổ biến'],
+  ['Codecademy Pro', 'codecademy-pro', 'codecademy.png', 'study', 159000, 299000, 4.7, 492, 'Ưu đãi'],
+  ['Quizlet Plus', 'quizlet-plus', 'quizlet.png', 'study', 69000, 129000, 4.8, 923, 'Bán chạy'],
+  ['Coursera Plus', 'coursera-plus', 'coursera.png', 'study', 189000, 349000, 4.8, 567, 'Ưu đãi'],
+  ['Notion Plus', 'notion-plus', 'notion.png', 'study', 79000, 149000, 4.9, 1564, 'Bán chạy'],
+  ['Udemy Business', 'udemy-business', 'udemy.png', 'study', 129000, 239000, 4.7, 611, 'Phổ biến'],
+
+  ['ElevenLabs Creator', 'elevenlabs-creator', 'elevenlabs.png', 'ai', 179000, 299000, 4.8, 936, 'Mới'],
+  ['Kling AI Pro', 'kling-ai-pro', 'kling-ai.png', 'ai', 149000, 259000, 4.7, 854, 'Hot'],
+  ['Grok Premium', 'grok-premium', 'grok.png', 'ai', 119000, 219000, 4.6, 489, 'Mới'],
+  ['ChatGPT Plus', 'chatgpt-plus', 'chatgpt.png', 'ai', 199000, 499000, 4.9, 5842, 'Bán chạy'],
+  ['Google Veo 3', 'google-veo-3', 'veo3.png', 'ai', 249000, 499000, 4.8, 1236, 'Hot'],
+  ['Google Gemini Advanced', 'gemini-advanced', 'gemini.png', 'ai', 169000, 349000, 4.9, 2781, 'Bán chạy'],
+  ['Suno Pro', 'suno-pro', 'suno.png', 'ai', 139000, 259000, 4.8, 1058, 'Phổ biến'],
+  ['Claude Pro', 'claude-pro', 'claude.png', 'ai', 189000, 399000, 4.9, 1746, 'Bán chạy'],
+  ['Higgsfield Pro', 'higgsfield-pro', 'higgsfield.png', 'ai', 179000, 329000, 4.6, 348, 'Mới'],
+  ['Midjourney Standard', 'midjourney-standard', 'midjourney.png', 'ai', 199000, 399000, 4.9, 2254, 'Hot'],
+
+  ['Canva Pro', 'canva-pro', 'canva.png', 'creative', 59000, 149000, 4.9, 7346, 'Bán chạy'],
+  ['Adobe Creative Cloud', 'adobe-creative-cloud', 'adobe.png', 'creative', 169000, 499000, 4.8, 2567, 'Bán chạy'],
+  ['CapCut Pro', 'capcut-pro', 'capcut.png', 'creative', 99000, 249000, 4.9, 4289, 'Bán chạy'],
+  ['Autodesk Collection', 'autodesk-collection', 'autodesk.png', 'creative', 199000, 499000, 4.7, 682, 'Ưu đãi'],
+  ['DaVinci Resolve Studio', 'davinci-resolve-studio', 'davinci-resolve.png', 'creative', 189000, 399000, 4.8, 776, 'Phổ biến'],
+  ['Filmora Pro', 'filmora-pro', 'filmora.png', 'creative', 129000, 299000, 4.7, 992, 'Ưu đãi'],
+  ['Figma Professional', 'figma-professional', 'figma.png', 'creative', 109000, 229000, 4.8, 1432, 'Hot'],
+  ['Meitu VIP', 'meitu-vip', 'meitu.png', 'creative', 79000, 159000, 4.6, 535, 'Mới'],
+  ['Magnific AI', 'magnific-ai', 'magnific.png', 'creative', 179000, 349000, 4.7, 429, 'Mới'],
+  ['Envato Elements', 'envato-elements', 'envato.png', 'creative', 139000, 299000, 4.8, 1389, 'Bán chạy'],
+
+  ['Microsoft 365', 'microsoft-365', 'microsoft-365.png', 'work', 129000, 299000, 4.9, 4865, 'Bán chạy'],
+  ['Windows 11 Pro', 'windows-11-pro', 'windows.png', 'work', 149000, 399000, 4.8, 2104, 'Bản quyền'],
+  ['Zoom Pro', 'zoom-pro', 'zoom.png', 'work', 149000, 299000, 4.8, 1108, 'Phổ biến'],
+  ['Google One', 'google-one', 'google-one.png', 'work', 79000, 159000, 4.9, 3834, 'Bán chạy'],
+  ['Microsoft OneDrive', 'microsoft-onedrive', 'onedrive.png', 'work', 69000, 149000, 4.8, 1842, 'Bán chạy'],
+  ['HMA VPN', 'hma-vpn', 'hma.png', 'work', 89000, 189000, 4.6, 377, 'Ưu đãi'],
+  ['ExpressVPN', 'expressvpn', 'expressvpn.png', 'work', 129000, 299000, 4.8, 1486, 'Hot'],
+  ['Proton VPN Plus', 'proton-vpn-plus', 'proton-vpn.png', 'work', 119000, 249000, 4.8, 928, 'Bảo mật'],
+  ['Kaspersky Premium', 'kaspersky-premium', 'kaspersky.png', 'work', 99000, 229000, 4.7, 1196, 'Bảo mật'],
+];
+
+const packageTemplates = {
+  study: [
+    ['Gói 1 tháng', '1 tháng', 'Tài khoản dùng chung', 1],
+    ['Gói 6 tháng', '6 tháng', 'Tài khoản riêng', 4.6],
+    ['Gói 1 năm', '12 tháng', 'Nâng cấp chính chủ', 7.9],
+  ],
+  ai: [
+    ['Gói 1 tháng', '1 tháng', 'Tài khoản riêng', 1],
+    ['Gói 3 tháng', '3 tháng', 'Tài khoản riêng', 2.7],
+    ['Nâng cấp chính chủ', '1 tháng', 'Nâng cấp chính chủ', 1.35],
+  ],
+  creative: [
+    ['Gói 1 tháng', '1 tháng', 'Tài khoản riêng', 1],
+    ['Gói 6 tháng', '6 tháng', 'Thành viên nhóm', 4.8],
+    ['Gói 1 năm', '12 tháng', 'Nâng cấp chính chủ', 8.4],
+  ],
+  work: [
+    ['Gói 1 tháng', '1 tháng', 'Tài khoản riêng', 1],
+    ['Gói 1 năm', '12 tháng', 'Mã kích hoạt', 7.5],
+    ['Gói gia đình', '12 tháng', 'Thành viên nhóm', 9.2],
+  ],
+};
+
+const featureByCategory = {
+  study: ['Truy cập đầy đủ tính năng Premium', 'Hỗ trợ học tập trên nhiều thiết bị', 'Hướng dẫn kích hoạt rõ ràng', 'Bảo hành trong thời gian sử dụng'],
+  ai: ['Sử dụng các mô hình và tính năng nâng cao', 'Tốc độ xử lý ưu tiên', 'Phù hợp học tập, công việc và sáng tạo', 'Hỗ trợ kích hoạt nhanh'],
+  creative: ['Mở khóa công cụ thiết kế chuyên nghiệp', 'Xuất file chất lượng cao, không watermark', 'Kho hiệu ứng và tài nguyên phong phú', 'Dùng được trên thiết bị tương thích'],
+  work: ['Nâng cao hiệu suất công việc', 'Đồng bộ và bảo mật dữ liệu', 'Hỗ trợ nhiều nền tảng', 'Bảo hành và hỗ trợ kỹ thuật'],
+};
+
+export const products = rows.map((row, index) => {
+  const [name, slug, logo, categoryId, price, originalPrice, rating, soldCount, badge] = row;
+  const stock = 8 + ((index * 7) % 54);
+  return {
+    id: index + 1,
+    name,
+    slug,
+    logo: `/assets/logos/${logo}`,
+    categoryId,
+    price,
+    originalPrice,
+    rating,
+    reviewCount: Math.max(24, Math.round(soldCount * 0.16)),
+    soldCount,
+    stock,
+    badge,
+    featured: ['chatgpt-plus', 'gemini-advanced', 'canva-pro', 'adobe-creative-cloud', 'capcut-pro', 'microsoft-365', 'google-one', 'microsoft-onedrive'].includes(slug),
+    shortDescription: `Tài khoản ${name} bản quyền, kích hoạt nhanh, hỗ trợ tận tâm trong suốt thời gian sử dụng.`,
+    description: `${name} giúp bạn khai thác trọn vẹn các tính năng nâng cao với mức chi phí hợp lý. Sản phẩm được Hải Premium kiểm tra trước khi bàn giao, đi kèm hướng dẫn sử dụng và chính sách bảo hành minh bạch.`,
+    features: featureByCategory[categoryId],
+    warranty: 'Bảo hành trong toàn bộ thời hạn gói đối với lỗi từ tài khoản hoặc quá trình kích hoạt. Không bảo hành trường hợp khách hàng tự thay đổi thông tin trái hướng dẫn.',
+    packages: packageTemplates[categoryId].map(([packageName, duration, accountType, multiplier], packageIndex) => ({
+      id: `${index + 1}-${packageIndex + 1}`,
+      name: `${name} — ${packageName}`,
+      label: packageName,
+      duration,
+      accountType,
+      price: Math.round((price * multiplier) / 1000) * 1000,
+      originalPrice: Math.round((originalPrice * multiplier) / 1000) * 1000,
+      stock: Math.max(2, stock - packageIndex * 3),
+      warrantyDays: packageIndex === 0 ? 30 : packageIndex === 1 ? 180 : 365,
+    })),
+  };
+});
+
+export const featuredProducts = products.filter((item) => item.featured);
+
+export const testimonials = [
+  { name: 'Minh Anh', avatar: 'MA', product: 'Canva Pro', rating: 5, content: 'Mua xong được kích hoạt rất nhanh. Shop hướng dẫn chi tiết, dùng ổn định và hỗ trợ nhiệt tình.' },
+  { name: 'Hoàng Nam', avatar: 'HN', product: 'ChatGPT Plus', rating: 5, content: 'Giá hợp lý, tài khoản hoạt động tốt. Mình hỏi khá nhiều nhưng shop vẫn trả lời rất nhanh.' },
+  { name: 'Thu Hà', avatar: 'TH', product: 'Microsoft 365', rating: 5, content: 'Quy trình mua đơn giản, thông tin rõ ràng. Dùng cho công việc hằng ngày rất tiện.' },
+];
+
+export const faqs = [
+  ['Sau khi thanh toán bao lâu thì nhận được tài khoản?', 'Với sản phẩm có sẵn, thông tin thường được bàn giao trong 5–15 phút sau khi thanh toán được xác nhận. Một số gói nâng cấp chính chủ có thể cần thêm thời gian xử lý.'],
+  ['Tài khoản được bảo hành như thế nào?', 'Hải Premium hỗ trợ trong toàn bộ thời hạn gói đối với lỗi phát sinh từ tài khoản hoặc quá trình kích hoạt, theo đúng điều kiện của từng sản phẩm.'],
+  ['Tôi có được đổi mật khẩu không?', 'Điều này phụ thuộc loại gói. Tài khoản riêng có thể cho phép đổi mật khẩu; tài khoản dùng chung không được tự ý thay đổi thông tin.'],
+  ['Có hỗ trợ khi tài khoản gặp lỗi không?', 'Có. Bạn có thể gửi yêu cầu hỗ trợ từ trang đơn hàng hoặc liên hệ qua hotline, Zalo và email hiển thị trên website.'],
+  ['Thanh toán bằng hình thức nào?', 'Bản demo hỗ trợ giao diện chuyển khoản ngân hàng và quét mã QR. Khi tích hợp backend có thể mở rộng thêm ví điện tử và cổng thanh toán.'],
+];
+
+export const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0,
+}).format(value);
+
+export const getCategory = (id) => categories.find((item) => item.id === id);
