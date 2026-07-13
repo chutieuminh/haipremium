@@ -10,6 +10,7 @@ import { formatCurrency } from '../data/products';
 import { useStore } from '../context/StoreContext';
 import { useCatalog } from '../context/CatalogContext';
 import { api, assetUrl } from '../api/client';
+import { ZALO_CONTACT_URL } from '../constants/contact';
 
 const tabs = ['Mô tả', 'Tính năng', 'Hướng dẫn sử dụng', 'Bảo hành', 'Đánh giá'];
 
@@ -54,11 +55,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const buyNow = async () => {
-    await addToCart(product, selectedPackage, quantity, false);
-    navigate('/cart');
-  };
-
   const tabContent = {
     'Mô tả': <p>{product.description}</p>,
     'Tính năng': <ul>{(product.features || []).map((item) => <li key={item}><Check size={17} /> {item}</li>)}</ul>,
@@ -75,7 +71,7 @@ export default function ProductDetailPage() {
       <section className="container product-detail-grid">
         <div className="product-detail-media">
           <button className="back-floating" onClick={() => navigate(-1)}><ArrowLeft size={17} /> Quay lại</button>
-          <div className="product-detail-logo"><img src={assetUrl(product.logo)} alt={product.name} /></div>
+          <div className={`product-detail-logo product-detail-logo--${product.slug}`}><img src={assetUrl(product.logo)} alt={product.name} /></div>
           <div className="product-detail-trust"><span><BadgeCheck /> Nguồn hàng kiểm tra</span><span><RefreshCcw /> Bảo hành minh bạch</span><span><Zap /> Kích hoạt nhanh</span></div>
         </div>
 
@@ -100,7 +96,7 @@ export default function ProductDetailPage() {
             <div className="detail-price"><small>Giá gói đã chọn</small><strong>{formatCurrency(selectedPackage?.price ?? selectedPackage?.salePrice ?? product.price)}</strong>{selectedPackage?.originalPrice > (selectedPackage?.price ?? selectedPackage?.salePrice) && <del>{formatCurrency(selectedPackage.originalPrice)}</del>}</div>
             <div className="quantity-control"><button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16} /></button><span>{quantity}</span><button onClick={() => setQuantity(Math.min(selectedPackage?.stock || 1, quantity + 1))}><Plus size={16} /></button></div>
             <button className="button button--soft button--large" onClick={() => addToCart(product, selectedPackage, quantity)} disabled={!selectedPackage?.stock}><ShoppingCart size={19} /> Thêm vào giỏ</button>
-            <button className="button button--primary button--large" onClick={buyNow} disabled={!selectedPackage?.stock}>Mua ngay</button>
+            <a className={`button button--primary button--large ${!selectedPackage?.stock ? 'is-disabled' : ''}`} href={selectedPackage?.stock ? ZALO_CONTACT_URL : undefined} target="_blank" rel="noreferrer" aria-disabled={!selectedPackage?.stock}>Mua ngay</a>
           </div>
           <div className="detail-notes"><span><ShieldCheck size={18} /> Dữ liệu bàn giao chỉ hiển thị cho chủ đơn hàng</span><span><BadgeCheck size={18} /> Hỗ trợ trong thời gian gói còn hiệu lực</span></div>
         </div>

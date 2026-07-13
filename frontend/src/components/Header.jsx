@@ -42,7 +42,7 @@ export default function Header() {
     <>
       <div className="topbar">
         <div className="container topbar__inner">
-          <span><Headphones size={14} /> Hỗ trợ nhanh: 08:00 – 23:00 mỗi ngày</span>
+          <span><Headphones size={14} /> Hỗ trợ nhanh: 9:00 - 17:00 mỗi ngày</span>
           <div>
             <Link to="/guide">Chính sách bảo hành</Link>
             {user?.role === 'admin' && <><span className="topbar__divider" /><Link to="/admin">Trang quản trị</Link></>}
@@ -98,7 +98,7 @@ export default function Header() {
             <nav className="nav-links">
               {navItems.map(([to, label]) => <NavLink key={to} to={to}>{label}</NavLink>)}
             </nav>
-            <div className="nav-promo"><span>🔥</span> Giảm đến 60% hôm nay</div>
+            <Link className="nav-promo" to="/products"><span>🔥</span> Giảm đến 50% hôm nay. Mua ngay!</Link>
           </div>
         </div>
       </header>

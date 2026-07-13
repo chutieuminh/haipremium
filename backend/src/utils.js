@@ -179,6 +179,7 @@ export const serializeOrder = (order, { includeDeliveries = true } = {}) => {
       lineTotal: numberValue(item.lineTotal),
       product: item.product ? serializeProduct(item.product) : undefined,
       deliveries: includeDeliveries ? item.deliveries || [] : undefined,
+      review: item.review || item.Review || null,
     })),
   };
   return result;

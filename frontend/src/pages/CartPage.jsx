@@ -5,14 +5,16 @@ import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { api, assetUrl } from '../api/client';
 import { formatCurrency } from '../data/products';
+import { ZALO_CONTACT_URL } from '../constants/contact';
 
 export default function CartPage() {
-  const { cart, cartTotal, updateQuantity, removeFromCart, clearCart, notify } = useStore();
+  const { cart, cartTotal, updateQuantity, removeFromCart, clearCart, notify, setCart } = useStore();
   const { user } = useAuth();
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [couponCode, setCouponCode] = useState('');
   const [checkingCoupon, setCheckingCoupon] = useState(false);
+  const [creatingOrder, setCreatingOrder] = useState(false);
 
   const applyCoupon = async () => {
     if (!coupon.trim()) return notify('Vui lòng nhập mã giảm giá.', 'error');
@@ -28,6 +30,28 @@ export default function CartPage() {
       setCouponCode('');
       notify(error.message, 'error');
     } finally { setCheckingCoupon(false); }
+  };
+
+  const createOrderAndContact = async () => {
+    if (!user) return notify('Bạn cần đăng nhập để tạo đơn hàng trước khi liên hệ thanh toán.', 'info');
+    setCreatingOrder(true);
+    try {
+      const payload = await api.post('/orders', {
+        customerName: user.fullName || 'Khách hàng',
+        customerEmail: user.email,
+        customerPhone: user.phone || '0000000000',
+        note: 'Khách liên hệ thanh toán qua Zalo.',
+        paymentMethod: 'bank',
+        couponCode,
+      }, { auth: true });
+      setCart([]);
+      notify(`Đã tạo đơn ${payload.data.orderCode}. Đang mở Zalo để thanh toán.`);
+      window.open(ZALO_CONTACT_URL, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      notify(error.message, 'error');
+    } finally {
+      setCreatingOrder(false);
+    }
   };
 
   if (!cart.length) {
@@ -64,8 +88,8 @@ export default function CartPage() {
             {couponCode && <div className="applied-coupon">Đã áp dụng: <strong>{couponCode}</strong></div>}
             <div className="summary-lines"><div><span>Tạm tính</span><strong>{formatCurrency(cartTotal)}</strong></div><div><span>Giảm giá</span><strong className="success-text">-{formatCurrency(discount)}</strong></div><div><span>Phí xử lý</span><strong>Miễn phí</strong></div></div>
             <div className="summary-total"><span>Tổng thanh toán</span><strong>{formatCurrency(cartTotal - discount)}</strong></div>
-            <Link to="/checkout" state={{ couponCode }} className="button button--primary button--large button--block">Tiến hành thanh toán <ArrowRight size={18} /></Link>
-            {!user && <p className="cart-login-note">Bạn sẽ được yêu cầu đăng nhập trước khi tạo đơn hàng.</p>}
+            <button type="button" onClick={createOrderAndContact} disabled={creatingOrder} className="button button--primary button--large button--block">{creatingOrder ? 'Đang tạo đơn...' : 'Liên hệ thanh toán qua Zalo'} <ArrowRight size={18} /></button>
+            {!user && <p className="cart-login-note">Bạn có thể nhắn Zalo để được tư vấn và chốt đơn nhanh.</p>}
             <p className="secure-note"><ShieldCheck size={17} /> Thông tin đơn hàng và bàn giao được bảo vệ.</p>
           </aside>
         </div>

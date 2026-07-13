@@ -35,12 +35,12 @@ export default function LoginPage() {
       <section className="auth-visual">
         <div className="auth-visual__top"><Brand /></div>
         <div className="auth-visual__content">
-          <span className="eyebrow eyebrow--light"><Sparkles size={15} /> Premium Apps</span>
-          <h1>Mọi tài khoản premium, trong một nơi đáng tin cậy.</h1>
-          <p>Quản lý đơn hàng, xem thông tin bàn giao và nhận hỗ trợ nhanh ngay trong tài khoản Hải Premium.</p>
+          <span className="eyebrow eyebrow--light"><Sparkles size={15} /> Hải Premium Accounts</span>
+          <h1>Nâng cấp tài khoản Premium chính chủ</h1>
+          <p>Nâng cấp toàn khoản chính chủ, hỗ trợ nhanh chóng, bảo hành lỗi 1 đổi 1 nếu có vấn đề.</p>
           <div className="auth-benefits"><span><Check size={17} /> Theo dõi trạng thái đơn hàng</span><span><Check size={17} /> Lưu sản phẩm yêu thích</span><span><Check size={17} /> Xem thông tin bàn giao bảo mật</span></div>
         </div>
-        <div className="auth-visual__trust"><ShieldCheck /> <span><strong>Bảo mật thông tin</strong><small>Dữ liệu nhạy cảm chỉ hiển thị cho chủ đơn hàng.</small></span></div>
+        <div className="auth-visual__trust"><ShieldCheck /> <span><strong>Bảo mật thông tin người dùng</strong></span></div>
       </section>
 
       <section className="auth-form-wrap">
@@ -57,7 +57,6 @@ export default function LoginPage() {
             {tab === 'login' && <div className="auth-options"><label className="check-row"><input type="checkbox" /><span>Ghi nhớ đăng nhập</span></label><a href="#forgot">Quên mật khẩu?</a></div>}
             <button className="button button--primary button--large button--block" type="submit" disabled={submitting}>{submitting ? 'Đang xử lý...' : tab === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={18} /></button>
           </form>
-          <div className="auth-demo-note"><strong>Tài khoản khách demo:</strong> customer@haipremium.vn / Customer123!<br /><span>Tài khoản admin dùng email và mật khẩu trong file backend/.env.</span></div>
         </div>
       </section>
     </div>

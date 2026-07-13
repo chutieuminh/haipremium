@@ -10,9 +10,8 @@ export default function Footer() {
           <Brand />
           <p>Giải pháp tài khoản bản quyền với chi phí hợp lý, giao nhanh và hỗ trợ tận tâm.</p>
           <div className="footer__socials">
-            <a href="#facebook" aria-label="Facebook"><Facebook size={18} /></a>
-            <a href="#zalo" aria-label="Zalo"><MessageCircle size={18} /></a>
-            <a href="mailto:support@haipremium.vn" aria-label="Email"><Mail size={18} /></a>
+            <a href="https://www.facebook.com/tranngochai.premiums" aria-label="Facebook"><Facebook size={18} /></a>
+            <a href="https://zalo.me/0814831885" aria-label="Zalo"><MessageCircle size={18} /></a>  
           </div>
         </div>
         <div>
@@ -31,16 +30,14 @@ export default function Footer() {
         </div>
         <div>
           <h4>Liên hệ Hải Premium</h4>
-          <p><Phone size={17} /> 0900 123 456</p>
-          <p><Mail size={17} /> support@haipremium.vn</p>
-          <p><MapPin size={17} /> Việt Nam</p>
+          <p><Phone size={17} /> 081 483 1885</p>
+          <p><MapPin size={17} />LK 17-515 Waterfront City 2 Võ Nguyên Giáp, Vĩnh Niệm, Lê Chân, 184300</p>
           <span className="footer__verified"><ShieldCheck size={17} /> Bảo hành minh bạch</span>
         </div>
       </div>
       <div className="footer__bottom">
         <div className="container">
-          <span>© 2026 Hải Premium. Hệ thống thương mại điện tử fullstack.</span>
-          <span>Logo bên thứ ba chỉ dùng để nhận diện sản phẩm.</span>
+          <span>© 2026 Hải Premium.</span>  
         </div>
       </div>
     </footer>

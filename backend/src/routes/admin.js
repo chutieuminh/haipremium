@@ -2,18 +2,19 @@ import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import slugify from 'slugify';
+import bcrypt from 'bcryptjs';
 import { body } from 'express-validator';
 import { parse } from 'csv-parse/sync';
 import { Op, fn, col, literal } from 'sequelize';
 import { env, sequelize } from '../config.js';
 import {
-  AuditLog, Banner, Category, Coupon, Inventory, Order, OrderDelivery, OrderItem, Payment,
+  AuditLog, Banner, Cart, Category, Coupon, CouponUsage, Inventory, Order, OrderDelivery, OrderItem, Payment,
   Product, ProductPackage, Review, Setting, SupportRequest, User,
 } from '../models.js';
 import { authenticate, imageUpload, requireAdmin, validate } from '../middleware.js';
 import {
   AppError, asyncHandler, audit, decryptSecret, encryptSecret, numberValue,
-  serializeOrder, serializeProduct, success,
+  createOrderCode, serializeOrder, serializeProduct, success,
 } from '../utils.js';
 
 const router = express.Router();
@@ -216,6 +217,65 @@ router.get('/orders', asyncHandler(async (req, res) => {
   return success(res, orders.map((order) => serializeOrder(order)));
 }));
 
+router.post('/orders', [
+  body('userId').isInt({ min: 1 }),
+  body('packageId').isInt({ min: 1 }),
+  body('quantity').optional().isInt({ min: 1, max: 99 }),
+], validate, asyncHandler(async (req, res) => {
+  const created = await sequelize.transaction(async (transaction) => {
+    const user = await User.findOne({ where: { id: req.body.userId, role: 'customer' }, transaction });
+    if (!user) throw new AppError('Không tìm thấy khách hàng.', 404);
+    const pkg = await ProductPackage.findByPk(req.body.packageId, {
+      include: [{ model: Product, as: 'product' }],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!pkg || !pkg.product) throw new AppError('Không tìm thấy gói sản phẩm.', 404);
+    const quantity = Math.max(1, Number(req.body.quantity || 1));
+    if (Number(pkg.stock || 0) < quantity) throw new AppError('Gói sản phẩm không đủ tồn kho.', 422);
+    const unitPrice = numberValue(pkg.salePrice);
+    const subtotal = unitPrice * quantity;
+    const discountAmount = numberValue(req.body.discountAmount);
+    const order = await Order.create({
+      userId: user.id,
+      orderCode: await createOrderCode(Order),
+      customerName: req.body.customerName || user.fullName,
+      customerEmail: req.body.customerEmail || user.email,
+      customerPhone: req.body.customerPhone || user.phone || 'Chưa cập nhật',
+      note: req.body.note || '',
+      subtotal,
+      discountAmount,
+      total: Math.max(0, subtotal - discountAmount),
+      paymentMethod: req.body.paymentMethod || 'bank',
+      paymentStatus: req.body.paymentStatus || 'unpaid',
+      orderStatus: req.body.orderStatus || 'pending_payment',
+      internalNote: req.body.internalNote || '',
+    }, { transaction });
+    await OrderItem.create({
+      orderId: order.id,
+      productId: pkg.product.id,
+      packageId: pkg.id,
+      productName: pkg.product.name,
+      productSlug: pkg.product.slug,
+      packageName: pkg.name,
+      accountType: pkg.accountType,
+      unitPrice,
+      quantity,
+      lineTotal: subtotal,
+    }, { transaction });
+    await Payment.create({
+      orderId: order.id,
+      method: order.paymentMethod,
+      amount: order.total,
+      status: order.paymentStatus === 'paid' ? 'paid' : 'pending',
+    }, { transaction });
+    await ProductPackage.decrement('stock', { by: quantity, where: { id: pkg.id }, transaction });
+    return Order.findByPk(order.id, { include: orderInclude, transaction });
+  });
+  await audit(req, 'ORDER_CREATED_BY_ADMIN', 'Order', created.id, { orderCode: created.orderCode });
+  return success(res, serializeOrder(created), 'Đã tạo đơn hàng.', 201);
+}));
+
 router.get('/orders/:id/payment-proof', asyncHandler(async (req, res) => {
   const order = await Order.findByPk(req.params.id);
   if (!order) throw new AppError('Không tìm thấy đơn hàng.', 404);
@@ -234,6 +294,25 @@ router.get('/orders/:id', asyncHandler(async (req, res) => {
   const order = await Order.findByPk(req.params.id, { include: orderInclude });
   if (!order) throw new AppError('Không tìm thấy đơn hàng.', 404);
   return success(res, serializeOrder(order));
+}));
+
+router.put('/orders/:id', asyncHandler(async (req, res) => {
+  const order = await Order.findByPk(req.params.id);
+  if (!order) throw new AppError('Không tìm thấy đơn hàng.', 404);
+  const allowed = ['customerName', 'customerEmail', 'customerPhone', 'note', 'internalNote', 'paymentMethod', 'paymentStatus', 'discountAmount'];
+  for (const key of allowed) if (req.body[key] !== undefined) order[key] = req.body[key];
+  if (req.body.orderStatus !== undefined) {
+    if (!['pending_payment', 'payment_review', 'paid', 'processing', 'completed', 'cancelled', 'refunded'].includes(req.body.orderStatus)) throw new AppError('Trạng thái đơn hàng không hợp lệ.', 422);
+    order.orderStatus = req.body.orderStatus;
+  }
+  if (req.body.subtotal !== undefined) order.subtotal = numberValue(req.body.subtotal);
+  order.total = req.body.total !== undefined ? numberValue(req.body.total) : Math.max(0, numberValue(order.subtotal) - numberValue(order.discountAmount));
+  if (order.orderStatus === 'completed' && !order.completedAt) order.completedAt = new Date();
+  await order.save();
+  if (req.body.paymentStatus !== undefined) await Payment.update({ status: req.body.paymentStatus === 'paid' ? 'paid' : req.body.paymentStatus }, { where: { orderId: order.id } });
+  const fresh = await Order.findByPk(order.id, { include: orderInclude });
+  await audit(req, 'ORDER_UPDATED', 'Order', order.id, { orderCode: order.orderCode });
+  return success(res, serializeOrder(fresh), 'Đã cập nhật đơn hàng.');
 }));
 
 router.post('/orders/:id/confirm-payment', asyncHandler(async (req, res) => {
@@ -303,12 +382,62 @@ router.post('/orders/:id/deliver', asyncHandler(async (req, res) => {
   return success(res, { orderId: delivered.order.id, orderCode: delivered.order.orderCode, deliveredItems: delivered.assignments }, 'Đã bàn giao và hoàn thành đơn hàng.');
 }));
 
+router.delete('/orders/:id', asyncHandler(async (req, res) => {
+  await sequelize.transaction(async (transaction) => {
+    const order = await Order.findByPk(req.params.id, { include: [{ model: OrderItem, as: 'items' }], transaction, lock: transaction.LOCK.UPDATE });
+    if (!order) throw new AppError('Không tìm thấy đơn hàng.', 404);
+    if (order.orderStatus === 'completed') throw new AppError('Không thể xóa đơn hàng đã hoàn thành.', 422);
+    if (!['cancelled', 'refunded'].includes(order.orderStatus)) {
+      for (const item of order.items) await ProductPackage.increment('stock', { by: item.quantity, where: { id: item.packageId }, transaction });
+    }
+    await Payment.destroy({ where: { orderId: order.id }, transaction });
+    await OrderItem.destroy({ where: { orderId: order.id }, transaction });
+    await order.destroy({ transaction });
+  });
+  await audit(req, 'ORDER_DELETED', 'Order', req.params.id);
+  return success(res, null, 'Đã xóa đơn hàng.');
+}));
+
 router.get('/users', asyncHandler(async (req, res) => {
   const where = { role: 'customer' };
   if (req.query.q) where[Op.or] = [{ fullName: { [Op.like]: `%${req.query.q}%` } }, { email: { [Op.like]: `%${req.query.q}%` } }];
   const users = await User.findAll({ where, attributes: { exclude: ['passwordHash'] }, order: [['createdAt', 'DESC']] });
   return success(res, users);
 }));
+
+router.post('/users', [
+  body('fullName').trim().isLength({ min: 2, max: 120 }),
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8, max: 72 }),
+], validate, asyncHandler(async (req, res) => {
+  if (await User.findOne({ where: { email: req.body.email } })) throw new AppError('Email này đã tồn tại.', 409);
+  const user = await User.create({
+    fullName: req.body.fullName,
+    email: req.body.email,
+    phone: req.body.phone || null,
+    passwordHash: await bcrypt.hash(req.body.password, 12),
+    role: 'customer',
+    status: req.body.status || 'active',
+  });
+  await Cart.create({ userId: user.id });
+  await audit(req, 'USER_CREATED_BY_ADMIN', 'User', user.id);
+  const safe = user.get({ plain: true });
+  delete safe.passwordHash;
+  return success(res, safe, 'Đã tạo khách hàng.', 201);
+}));
+
+router.put('/users/:id', asyncHandler(async (req, res) => {
+  const user = await User.findOne({ where: { id: req.params.id, role: 'customer' } });
+  if (!user) throw new AppError('Không tìm thấy khách hàng.', 404);
+  for (const key of ['fullName', 'email', 'phone', 'status']) if (req.body[key] !== undefined) user[key] = req.body[key];
+  if (req.body.password) user.passwordHash = await bcrypt.hash(req.body.password, 12);
+  await user.save();
+  await audit(req, 'USER_UPDATED_BY_ADMIN', 'User', user.id);
+  const safe = user.get({ plain: true });
+  delete safe.passwordHash;
+  return success(res, safe, 'Đã cập nhật khách hàng.');
+}));
+
 router.put('/users/:id/status', [body('status').isIn(['active', 'blocked'])], validate, asyncHandler(async (req, res) => {
   const user = await User.findOne({ where: { id: req.params.id, role: 'customer' } });
   if (!user) throw new AppError('Không tìm thấy khách hàng.', 404);
@@ -316,6 +445,20 @@ router.put('/users/:id/status', [body('status').isIn(['active', 'blocked'])], va
   await user.save();
   await audit(req, 'USER_STATUS_CHANGED', 'User', user.id, { status: user.status });
   return success(res, { id: user.id, status: user.status }, 'Đã cập nhật trạng thái khách hàng.');
+}));
+
+router.delete('/users/:id', asyncHandler(async (req, res) => {
+  const user = await User.findOne({ where: { id: req.params.id, role: 'customer' } });
+  if (!user) throw new AppError('Không tìm thấy khách hàng.', 404);
+  if (await Order.count({ where: { userId: user.id } })) {
+    user.status = 'blocked';
+    await user.save();
+    return success(res, { id: user.id, status: user.status }, 'Khách hàng đã có đơn nên được chuyển sang trạng thái khóa.');
+  }
+  await Cart.destroy({ where: { userId: user.id } });
+  await user.destroy();
+  await audit(req, 'USER_DELETED_BY_ADMIN', 'User', req.params.id);
+  return success(res, null, 'Đã xóa khách hàng.');
 }));
 
 const serializeInventoryAdmin = (item, reveal = false) => {
@@ -423,23 +566,65 @@ router.put('/coupons/:id', asyncHandler(async (req, res) => {
 router.delete('/coupons/:id', asyncHandler(async (req, res) => {
   const coupon = await Coupon.findByPk(req.params.id);
   if (!coupon) throw new AppError('Không tìm thấy mã giảm giá.', 404);
+  const usageCount = await CouponUsage.count({ where: { couponId: coupon.id } });
+  if (!usageCount) {
+    await coupon.destroy();
+    await audit(req, 'COUPON_DELETED', 'Coupon', req.params.id);
+    return success(res, null, 'Đã xóa mã giảm giá.');
+  }
   coupon.isActive = false;
   await coupon.save();
   await audit(req, 'COUPON_DISABLED', 'Coupon', coupon.id);
-  return success(res, null, 'Đã vô hiệu hóa mã giảm giá.');
+  return success(res, null, 'Mã đã có lịch sử sử dụng nên được chuyển sang trạng thái tắt.');
 }));
 
 router.get('/reviews', asyncHandler(async (_req, res) => {
   const reviews = await Review.findAll({ include: [{ model: User, as: 'user', attributes: ['id', 'fullName', 'email'] }, { model: Product, attributes: ['id', 'name', 'slug'] }], order: [['createdAt', 'DESC']] });
   return success(res, reviews);
 }));
+
+const refreshProductReviewStats = async (productId) => {
+  if (!productId) return;
+  const reviews = await Review.findAll({ where: { productId, isVisible: true } });
+  const reviewCount = reviews.length;
+  const averageRating = reviewCount ? reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviewCount : 0;
+  await Product.update({ averageRating, reviewCount }, { where: { id: productId } });
+};
+
+router.put('/reviews/:id', [
+  body('rating').optional().isInt({ min: 1, max: 5 }),
+  body('content').optional().trim().isLength({ min: 5, max: 2000 }),
+  body('isVisible').optional().isBoolean(),
+], validate, asyncHandler(async (req, res) => {
+  const review = await Review.findByPk(req.params.id);
+  if (!review) throw new AppError('Không tìm thấy đánh giá.', 404);
+  if (req.body.rating !== undefined) review.rating = req.body.rating;
+  if (req.body.content !== undefined) review.content = req.body.content;
+  if (req.body.isVisible !== undefined) review.isVisible = req.body.isVisible;
+  await review.save();
+  await refreshProductReviewStats(review.productId);
+  await audit(req, 'REVIEW_UPDATED_BY_ADMIN', 'Review', review.id);
+  return success(res, review, 'Đã cập nhật đánh giá.');
+}));
+
 router.put('/reviews/:id/status', [body('isVisible').isBoolean()], validate, asyncHandler(async (req, res) => {
   const review = await Review.findByPk(req.params.id);
   if (!review) throw new AppError('Không tìm thấy đánh giá.', 404);
   review.isVisible = req.body.isVisible;
   await review.save();
+  await refreshProductReviewStats(review.productId);
   await audit(req, 'REVIEW_VISIBILITY_CHANGED', 'Review', review.id, { isVisible: review.isVisible });
   return success(res, review, 'Đã cập nhật trạng thái đánh giá.');
+}));
+
+router.delete('/reviews/:id', asyncHandler(async (req, res) => {
+  const review = await Review.findByPk(req.params.id);
+  if (!review) throw new AppError('Không tìm thấy đánh giá.', 404);
+  const { productId } = review;
+  await review.destroy();
+  await refreshProductReviewStats(productId);
+  await audit(req, 'REVIEW_DELETED_BY_ADMIN', 'Review', req.params.id);
+  return success(res, null, 'Đã xóa đánh giá.');
 }));
 
 router.get('/support-requests', asyncHandler(async (_req, res) => {

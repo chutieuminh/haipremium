@@ -173,6 +173,7 @@ const orderInclude = [
     { model: Product, as: 'product', include: productInclude },
     { model: ProductPackage, as: 'package' },
     { model: OrderDelivery, as: 'deliveries', required: false },
+    { model: Review, required: false },
   ] },
   { model: Payment, as: 'payments' },
 ];

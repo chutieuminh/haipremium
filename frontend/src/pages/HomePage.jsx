@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, BadgeCheck, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign,
-  Clock3, CreditCard, Gift, GraduationCap, Headphones, KeyRound, PackageCheck,
+  Clock3, CreditCard, Gift, GraduationCap, Headphones, PackageCheck,
   Palette, ShieldCheck, ShoppingBag, Sparkles, Star, Zap,
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
@@ -50,8 +50,8 @@ export default function HomePage() {
             </div>
             <div className="hero-card__stats">
               <span><strong>40+</strong> sản phẩm</span>
-              <span><strong>15.000+</strong> lượt mua</span>
-              <span><strong>4,9/5</strong> đánh giá</span>
+              <span><strong>5.000+</strong> lượt mua</span>
+              <span><strong>5/5</strong> đánh giá</span>
             </div>
           </div>
         </div>
@@ -171,9 +171,9 @@ export default function HomePage() {
       <section className="section section--dark">
         <div className="container">
           <SectionHeading
-            eyebrow="Khách hàng nói gì"
+            eyebrow="Khách hàng nói gì về Hải Premium"
             title="Trải nghiệm thực tế tại Hải Premium"
-            description="Từng phản hồi là động lực để chúng tôi cải thiện chất lượng sản phẩm và hỗ trợ."
+            description="Từng phản hồi, đánh giá là động lực để chúng tôi cải thiện chất lượng sản phẩm và hỗ trợ."
           />
           <div className="testimonial-grid">
             {testimonials.map((item) => (
@@ -199,7 +199,7 @@ export default function HomePage() {
             <p>Các thông tin quan trọng về bàn giao, bảo hành và cách sử dụng tài khoản kỹ thuật số.</p>
             <div className="support-card">
               <span><Clock3 /></span>
-              <div><strong>Cần hỗ trợ nhanh?</strong><p>Đội ngũ phản hồi từ 08:00 đến 23:00 mỗi ngày.</p></div>
+              <div><strong>Cần hỗ trợ nhanh?</strong><p>Đội ngũ phản hồi từ 09:00 đến 17:00 mỗi ngày.</p></div>
             </div>
           </div>
           <div className="faq-list">
@@ -215,19 +215,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="newsletter-section">
-        <div className="container newsletter-card">
-          <div>
-            <span><KeyRound size={18} /> Ưu đãi và sản phẩm mới</span>
-            <h2>Nhận thông tin hữu ích từ Hải Premium</h2>
-            <p>Không spam. Chỉ gửi cập nhật giá, mã ưu đãi và hướng dẫn sử dụng.</p>
-          </div>
-          <form onSubmit={(event) => event.preventDefault()}>
-            <input type="email" placeholder="Email của bạn" aria-label="Email nhận tin" />
-            <button className="button button--primary">Đăng ký</button>
-          </form>
-        </div>
-      </section>
     </>
   );
 }

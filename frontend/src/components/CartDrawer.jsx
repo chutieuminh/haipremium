@@ -1,11 +1,37 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../data/products';
-import { assetUrl } from '../api/client';
+import { api, assetUrl } from '../api/client';
+import { ZALO_CONTACT_URL } from '../constants/contact';
 
 export default function CartDrawer() {
-  const { cart, cartOpen, setCartOpen, updateQuantity, removeFromCart, cartTotal } = useStore();
+  const { cart, cartOpen, setCartOpen, updateQuantity, removeFromCart, cartTotal, setCart, notify } = useStore();
+  const { user } = useAuth();
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const createOrderAndContact = async () => {
+    if (!user) return notify('Bạn cần đăng nhập để tạo đơn hàng trước khi liên hệ thanh toán.', 'info');
+    setCreatingOrder(true);
+    try {
+      const payload = await api.post('/orders', {
+        customerName: user.fullName || 'Khách hàng',
+        customerEmail: user.email,
+        customerPhone: user.phone || '0000000000',
+        note: 'Khách liên hệ thanh toán qua Zalo.',
+        paymentMethod: 'bank',
+      }, { auth: true });
+      setCart([]);
+      setCartOpen(false);
+      notify(`Đã tạo đơn ${payload.data.orderCode}. Đang mở Zalo để thanh toán.`);
+      window.open(ZALO_CONTACT_URL, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      notify(error.message, 'error');
+    } finally {
+      setCreatingOrder(false);
+    }
+  };
   if (!cartOpen) return null;
   return (
     <div className="drawer-overlay" onClick={() => setCartOpen(false)}>
@@ -49,7 +75,7 @@ export default function CartDrawer() {
             <div className="cart-summary-row"><span>Tạm tính</span><strong>{formatCurrency(cartTotal)}</strong></div>
             <p>Phí thanh toán (nếu có) được hiển thị ở bước tiếp theo.</p>
             <Link className="button button--primary button--block" to="/cart" onClick={() => setCartOpen(false)}>Xem giỏ hàng</Link>
-            <Link className="button button--ghost button--block" to="/checkout" onClick={() => setCartOpen(false)}>Thanh toán ngay</Link>
+            <button className="button button--ghost button--block" type="button" onClick={createOrderAndContact} disabled={creatingOrder}>{creatingOrder ? 'Đang tạo đơn...' : 'Liên hệ thanh toán'}</button>
           </div>
         )}
       </aside>

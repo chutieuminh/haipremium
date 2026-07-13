@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ArrowUp } from 'lucide-react';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
@@ -13,6 +14,7 @@ import GuidePage from './pages/GuidePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './context/AuthContext';
 import Toast from './components/Toast';
+import { ZALO_CONTACT_URL } from './constants/contact';
 
 function ScrollToTop() {
   const { pathname, search } = useLocation();
@@ -20,6 +22,36 @@ function ScrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [pathname, search]);
   return null;
+}
+
+function ScrollToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 420);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <button
+      className={`scroll-top-button ${visible ? 'is-visible' : ''}`}
+      type="button"
+      aria-label="Cuộn lên đầu trang"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+    >
+      <ArrowUp size={20} />
+    </button>
+  );
+}
+
+function ZaloContactButton() {
+  return (
+    <a className="zalo-float-button" href={ZALO_CONTACT_URL} target="_blank" rel="noreferrer" aria-label="Liên hệ Zalo">
+      <img src="/assets/zalo_icon.svg" alt="" />
+    </a>
+  );
 }
 
 function ProtectedRoute({ children, admin = false }) {
@@ -49,6 +81,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<ProtectedRoute admin><AdminPage /></ProtectedRoute>} />
       </Routes>
+      <ZaloContactButton />
+      <ScrollToTopButton />
       <Toast />
     </>
   );

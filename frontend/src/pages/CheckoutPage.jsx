@@ -5,6 +5,7 @@ import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { api, assetUrl } from '../api/client';
 import { formatCurrency } from '../data/products';
+import { ZALO_CONTACT_URL } from '../constants/contact';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, setCart, notify } = useStore();
@@ -37,13 +38,14 @@ export default function CheckoutPage() {
         customerName: form.name,
         customerEmail: form.email,
         customerPhone: form.phone,
-        note: form.note,
+        note: form.note || 'Khách liên hệ thanh toán qua Zalo.',
         paymentMethod: method,
         couponCode,
       }, { auth: true });
       setOrder(payload.data);
       setCart([]);
-      notify(payload.message);
+      notify(`Đã tạo đơn ${payload.data.orderCode}. Đang mở Zalo để thanh toán.`);
+      window.open(ZALO_CONTACT_URL, '_blank', 'noopener,noreferrer');
     } catch (error) {
       notify(error.message, 'error');
     } finally { setSubmitting(false); }
@@ -126,7 +128,7 @@ export default function CheckoutPage() {
             <div className="checkout-items">{cart.map((item) => <article key={item.key}><div className="product-logo product-logo--small"><img src={assetUrl(item.logo)} alt={item.name} /></div><div><strong>{item.name}</strong><span>{item.packageLabel} × {item.quantity}</span></div><b>{formatCurrency(item.price * item.quantity)}</b></article>)}</div>
             <div className="summary-lines"><div><span>Tạm tính</span><strong>{formatCurrency(cartTotal)}</strong></div>{couponCode && <div><span>Mã giảm giá</span><strong>{couponCode}</strong></div>}<div><span>Phí xử lý</span><strong>Miễn phí</strong></div></div>
             <div className="summary-total"><span>Tổng tạm tính</span><strong>{formatCurrency(cartTotal)}</strong></div>
-            <button className="button button--primary button--large button--block" type="submit" disabled={submitting}>{submitting ? 'Đang tạo đơn...' : 'Tạo đơn hàng'}</button>
+            <button className="button button--primary button--large button--block" type="submit" disabled={submitting}>{submitting ? 'Đang tạo đơn...' : 'Liên hệ thanh toán qua Zalo'}</button>
             <p className="secure-note"><ShieldCheck size={17} /> Bằng việc đặt hàng, bạn đồng ý với điều khoản sử dụng và chính sách bảo hành.</p>
           </aside>
         </div>

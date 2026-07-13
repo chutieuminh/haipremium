@@ -11,9 +11,10 @@ export default function ProductCard({ product }) {
   const price = Number(product.price || product.basePrice || 0);
   const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0;
   const isFavorite = favorites.includes(Number(product.id));
+  const accent = category?.accent || '#1689d8';
 
   return (
-    <article className="product-card">
+    <article className={`product-card product-card--${product.slug}`} style={{ '--product-accent': accent }}>
       <div className="product-card__media">
         <Link to={`/products/${product.slug}`} className="product-card__logo-link">
           <img src={assetUrl(product.logo)} alt={`Logo ${product.name}`} loading="lazy" />

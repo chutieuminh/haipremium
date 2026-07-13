@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Bell, ChevronRight, Copy, CreditCard, Heart, KeyRound, LayoutDashboard, LifeBuoy,
-  LogOut, Package, Settings, ShieldCheck, ShoppingBag, UserRound,
+  Bell, ChevronRight, CreditCard, Heart, KeyRound, LayoutDashboard, LifeBuoy,
+  LogOut, Package, Settings, ShieldCheck, ShoppingBag, Star, UserRound,
 } from 'lucide-react';
 import { formatCurrency } from '../data/products';
 import { useStore } from '../context/StoreContext';
@@ -13,7 +13,7 @@ import { api, assetUrl } from '../api/client';
 const accountNav = [
   [LayoutDashboard, 'Tổng quan'],
   [ShoppingBag, 'Đơn hàng của tôi'],
-  [KeyRound, 'Tài khoản đã mua'],
+  [Star, 'Đánh giá sản phẩm'],
   [Heart, 'Sản phẩm yêu thích'],
   [UserRound, 'Thông tin cá nhân'],
   [Settings, 'Đổi mật khẩu'],
@@ -30,13 +30,13 @@ const statusClass = (status) => {
 export default function AccountPage() {
   const [active, setActive] = useState('Tổng quan');
   const [orders, setOrders] = useState([]);
-  const [deliveries, setDeliveries] = useState([]);
   const [supportRequests, setSupportRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const [profile, setProfile] = useState({ fullName: '', phone: '' });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
   const [supportForm, setSupportForm] = useState({ subject: '', message: '', orderId: '' });
+  const [reviewForm, setReviewForm] = useState({ orderItemId: '', rating: 5, content: '' });
+  const [ratingDragging, setRatingDragging] = useState(false);
   const { favorites, notify } = useStore();
   const { user, updateProfile, logout } = useAuth();
   const { products } = useCatalog();
@@ -62,25 +62,9 @@ export default function AccountPage() {
 
   const favoriteProducts = useMemo(() => products.filter((product) => favorites.includes(Number(product.id))), [products, favorites]);
   const completedOrders = orders.filter((order) => order.orderStatus === 'completed');
+  const reviewableItems = completedOrders.flatMap((order) => (order.items || []).map((item) => ({ ...item, orderCode: order.orderCode, orderCreatedAt: order.createdAt })));
+  const pendingReviewItems = reviewableItems.filter((item) => !item.review);
   const totalSpent = completedOrders.reduce((sum, order) => sum + Number(order.total), 0);
-
-  const copy = (value) => {
-    if (!value) return;
-    navigator.clipboard?.writeText(value);
-    notify('Đã sao chép thông tin', 'info');
-  };
-
-  const viewDeliveries = async (order) => {
-    setSelectedOrder(order);
-    setActive('Tài khoản đã mua');
-    try {
-      const payload = await api.get(`/orders/${order.orderCode}/deliveries`, { auth: true });
-      setDeliveries(payload.data);
-    } catch (error) {
-      setDeliveries([]);
-      notify(error.message, 'error');
-    }
-  };
 
   const saveProfile = async (event) => {
     event.preventDefault();
@@ -114,6 +98,28 @@ export default function AccountPage() {
     } catch (error) { notify(error.message, 'error'); }
   };
 
+  const sendReview = async (event) => {
+    event.preventDefault();
+    const selectedItem = reviewableItems.find((item) => item.id === Number(reviewForm.orderItemId));
+    if (!selectedItem) {
+      notify('Vui lòng chọn sản phẩm cần đánh giá.', 'error');
+      return;
+    }
+    if (selectedItem.review) {
+      notify('Tài khoản/sản phẩm này đã được đánh giá một lần.', 'error');
+      setReviewForm({ orderItemId: '', rating: 5, content: '' });
+      return;
+    }
+    try {
+      const payload = await api.post('/reviews', reviewForm, { auth: true });
+      notify(payload.message);
+      setReviewForm({ orderItemId: '', rating: 5, content: '' });
+      await loadAccount();
+    } catch (error) { notify(error.message, 'error'); }
+  };
+
+  const chooseRating = (rating) => setReviewForm((current) => ({ ...current, rating }));
+
   const signOut = async () => {
     await logout();
     navigate('/');
@@ -143,21 +149,37 @@ export default function AccountPage() {
               </div>
               <section className="account-panel">
                 <div className="account-panel__head"><div><h2>Đơn hàng gần đây</h2><p>Theo dõi trạng thái và xem chi tiết bàn giao.</p></div><button onClick={() => setActive('Đơn hàng của tôi')}>Xem tất cả <ChevronRight size={16} /></button></div>
-                <OrderList orders={orders.slice(0, 5)} onViewDelivery={viewDeliveries} />
+                <OrderList orders={orders.slice(0, 5)} />
               </section>
               <div className="account-bottom-grid">
-                <section className="account-panel delivery-card"><div className="account-panel__head"><div><h2>Bàn giao bảo mật</h2><p>Thông tin chỉ giải mã khi bạn mở đơn hoàn thành.</p></div><ShieldCheck size={22} /></div><p>Mỗi lần xem dữ liệu nhạy cảm đều được ghi vào nhật ký bảo mật của hệ thống.</p>{completedOrders[0] ? <button className="button button--soft button--block" onClick={() => viewDeliveries(completedOrders[0])}>Xem đơn hoàn thành mới nhất</button> : <Link className="button button--soft button--block" to="/products">Mua sản phẩm đầu tiên</Link>}</section>
+                <section className="account-panel delivery-card"><div className="account-panel__head"><div><h2>Bàn giao bảo mật</h2><p>Thông tin tài khoản sẽ được hỗ trợ qua Zalo sau khi đơn hoàn tất.</p></div><ShieldCheck size={22} /></div><p>Đội ngũ Hải Premium hỗ trợ bàn giao và bảo hành theo từng đơn hàng.</p><Link className="button button--soft button--block" to="/products">Tiếp tục mua sắm</Link></section>
                 <section className="account-panel support-panel"><span><LifeBuoy /></span><h2>Bạn cần hỗ trợ?</h2><p>Gửi yêu cầu kèm đơn hàng để đội ngũ xử lý nhanh hơn.</p><button className="button button--primary" onClick={() => setActive('Yêu cầu hỗ trợ')}>Tạo yêu cầu hỗ trợ</button></section>
               </div>
             </>
           )}
 
-          {!loading && active === 'Đơn hàng của tôi' && <section className="account-panel"><div className="account-panel__head"><div><h2>Đơn hàng của tôi</h2><p>{orders.length} đơn hàng trong tài khoản.</p></div></div><OrderList orders={orders} onViewDelivery={viewDeliveries} /></section>}
+          {!loading && active === 'Đơn hàng của tôi' && <section className="account-panel"><div className="account-panel__head"><div><h2>Đơn hàng của tôi</h2><p>{orders.length} đơn hàng trong tài khoản.</p></div></div><OrderList orders={orders} /></section>}
 
-          {!loading && active === 'Tài khoản đã mua' && (
+          {!loading && active === 'Đánh giá sản phẩm' && (
             <section className="account-panel">
-              <div className="account-panel__head"><div><h2>Tài khoản đã mua</h2><p>{selectedOrder ? `Đơn ${selectedOrder.orderCode}` : 'Chọn một đơn hoàn thành để xem thông tin.'}</p></div><ShieldCheck size={22} /></div>
-              {!deliveries.length ? <div className="account-placeholder"><span><KeyRound size={38} /></span><h3>Chưa có dữ liệu bàn giao đang mở</h3><p>Mở một đơn hàng đã hoàn thành trong danh sách đơn hàng.</p></div> : <div className="delivery-list">{deliveries.map((item) => <article className="delivery-secret-card" key={item.id}><h3>{item.productName}</h3><p>{item.packageName}</p>{item.loginEmail && <SecretRow label="Email đăng nhập" value={item.loginEmail} onCopy={copy} />}{item.loginUsername && <SecretRow label="Tên đăng nhập" value={item.loginUsername} onCopy={copy} />}{item.password && <SecretRow label="Mật khẩu" value={item.password} onCopy={copy} />}{item.activationCode && <SecretRow label="Mã kích hoạt" value={item.activationCode} onCopy={copy} />}{item.recoveryInfo && <SecretRow label="Khôi phục" value={item.recoveryInfo} onCopy={copy} />}{item.additionalInformation && <small>{item.additionalInformation}</small>}</article>)}</div>}
+              <div className="account-panel__head"><div><h2>Đánh giá sản phẩm</h2><p>Chỉ những sản phẩm trong đơn đã hoàn thành mới có thể gửi đánh giá.</p></div></div>
+              {!reviewableItems.length ? <div className="account-placeholder"><Star size={38} /><h3>Chưa có sản phẩm có thể đánh giá</h3><p>Hoàn thành một đơn hàng để chia sẻ trải nghiệm của bạn.</p></div> : (
+                <div className="customer-review-layout">
+                  <div className="customer-review-list">
+                    {reviewableItems.map((item) => <article key={item.id} className={Number(reviewForm.orderItemId) === item.id ? 'active' : ''}>
+                      <div className="product-logo product-logo--tiny"><img src={assetUrl(item.product?.logo || '/assets/brand-mark.png')} alt="" /></div>
+                      <div><strong>{item.productName}</strong><small>{item.packageName} · {item.orderCode}</small>{item.review && <span>Đã đánh giá {'★'.repeat(item.review.rating)}</span>}</div>
+                      <button disabled={Boolean(item.review)} onClick={() => setReviewForm({ orderItemId: item.id, rating: item.review?.rating || 5, content: item.review?.content || '' })}>{item.review ? 'Đã gửi' : 'Đánh giá'}</button>
+                    </article>)}
+                  </div>
+                  <form className="account-form customer-review-form" onSubmit={sendReview}>
+                    <label className="form-field"><span>Sản phẩm</span><select required value={reviewForm.orderItemId} onChange={(event) => setReviewForm({ ...reviewForm, orderItemId: event.target.value })}><option value="">{pendingReviewItems.length ? 'Chọn sản phẩm cần đánh giá' : 'Tất cả sản phẩm đã được đánh giá'}</option>{pendingReviewItems.map((item) => <option key={item.id} value={item.id}>{item.productName} - {item.orderCode}</option>)}</select></label>
+                    <div className="form-field"><span>Số sao</span><div className="rating-picker" role="radiogroup" aria-label="Chọn số sao" onPointerUp={() => setRatingDragging(false)} onPointerLeave={() => setRatingDragging(false)}>{[1, 2, 3, 4, 5].map((value) => <button key={value} type="button" className={value <= reviewForm.rating ? 'active' : ''} role="radio" aria-checked={value === reviewForm.rating} aria-label={`${value} sao`} onClick={() => chooseRating(value)} onPointerDown={() => { setRatingDragging(true); chooseRating(value); }} onPointerEnter={() => ratingDragging && chooseRating(value)}><Star size={28} fill="currentColor" /></button>)}<strong>{reviewForm.rating} sao</strong></div></div>
+                    <label className="form-field"><span>Nội dung đánh giá</span><textarea required minLength="5" rows="5" value={reviewForm.content} onChange={(event) => setReviewForm({ ...reviewForm, content: event.target.value })} placeholder="Chia sẻ trải nghiệm sử dụng sản phẩm..." /></label>
+                    <button className="button button--primary" disabled={!reviewForm.orderItemId}>Gửi đánh giá</button>
+                  </form>
+                </div>
+              )}
             </section>
           )}
 
@@ -174,11 +196,7 @@ export default function AccountPage() {
   );
 }
 
-function OrderList({ orders, onViewDelivery }) {
+function OrderList({ orders }) {
   if (!orders.length) return <div className="account-placeholder"><Package size={38} /><h3>Chưa có đơn hàng</h3><Link to="/products" className="button button--primary">Mua sản phẩm</Link></div>;
-  return <div className="orders-table"><div className="orders-table__head"><span>Sản phẩm</span><span>Mã đơn</span><span>Ngày mua</span><span>Tổng tiền</span><span>Trạng thái</span><span /></div>{orders.map((order) => { const first = order.items?.[0]; return <article key={order.id}><div className="order-product"><div className="product-logo product-logo--tiny"><img src={assetUrl(first?.product?.logo || '/assets/brand-mark.png')} alt="" /></div><div><strong>{first?.productName || 'Đơn hàng số'}</strong><small>{first?.packageName || `${order.items?.length || 0} sản phẩm`}</small></div></div><span>{order.orderCode}</span><span>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span><strong>{formatCurrency(order.total)}</strong><b className={`status-badge status-badge--${statusClass(order.orderStatus)}`}>{order.statusLabel}</b>{order.orderStatus === 'completed' ? <button onClick={() => onViewDelivery(order)} title="Xem bàn giao"><ChevronRight size={17} /></button> : <span />}</article>; })}</div>;
-}
-
-function SecretRow({ label, value, onCopy }) {
-  return <div className="secret-row"><span>{label}</span><strong>{value}</strong><button onClick={() => onCopy(value)}><Copy size={16} /></button></div>;
+  return <div className="orders-table orders-table--no-action"><div className="orders-table__head"><span>Sản phẩm</span><span>Mã đơn</span><span>Ngày mua</span><span>Tổng tiền</span><span>Trạng thái</span></div>{orders.map((order) => { const first = order.items?.[0]; return <article key={order.id}><div className="order-product"><div className="product-logo product-logo--tiny"><img src={assetUrl(first?.product?.logo || '/assets/brand-mark.png')} alt="" /></div><div><strong>{first?.productName || 'Đơn hàng số'}</strong><small>{first?.packageName || `${order.items?.length || 0} sản phẩm`}</small></div></div><span>{order.orderCode}</span><span>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</span><strong>{formatCurrency(order.total)}</strong><b className={`status-badge status-badge--${statusClass(order.orderStatus)}`}>{order.statusLabel}</b></article>; })}</div>;
 }

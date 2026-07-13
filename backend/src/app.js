@@ -56,7 +56,13 @@ for (const folder of ['products', 'banners', 'avatars', 'settings']) {
 
 app.get('/api/v1/health', (_req, res) => success(res, { status: 'ok', environment: env.nodeEnv }, 'Hải Premium API đang hoạt động.'));
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false, message: { success: false, message: 'Bạn thao tác quá nhiều lần. Vui lòng thử lại sau.', errors: [] } });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: env.nodeEnv === 'production' ? 80 : 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Bạn thao tác quá nhiều lần. Vui lòng thử lại sau.', errors: [] },
+});
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1', publicRoutes);
 app.use('/api/v1', userRoutes);
