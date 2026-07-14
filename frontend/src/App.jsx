@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, ChevronRight, Facebook, Headset, X } from 'lucide-react';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
@@ -14,13 +14,13 @@ import GuidePage from './pages/GuidePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './context/AuthContext';
 import Toast from './components/Toast';
-import { ZALO_CONTACT_URL } from './constants/contact';
+import { FACEBOOK_CONTACT_URL, ZALO_CONTACT_URL } from './constants/contact';
 
 function ScrollToTop() {
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [pathname, search]);
+  }, [pathname]);
   return null;
 }
 
@@ -46,11 +46,36 @@ function ScrollToTopButton() {
   );
 }
 
-function ZaloContactButton() {
+function ContactWidget() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <a className="zalo-float-button" href={ZALO_CONTACT_URL} target="_blank" rel="noreferrer" aria-label="Liên hệ Zalo">
-      <img src="/assets/zalo_icon.svg" alt="" />
-    </a>
+    <>
+      {open && <button className="contact-widget__backdrop" type="button" aria-label="Đóng liên hệ" onClick={() => setOpen(false)} />}
+      {open && (
+        <section className="contact-widget" aria-label="Kênh hỗ trợ">
+          <div className="contact-widget__head">
+            <span><Headset size={24} /></span>
+            <h2>Hải Premium</h2>
+            <p>Chúng tôi sẽ cố gắng hỗ trợ bạn nhanh nhất có thể, trân trọng!</p>
+          </div>
+          <a className="contact-widget__item" href={FACEBOOK_CONTACT_URL} target="_blank" rel="noreferrer">
+            <span className="contact-widget__icon contact-widget__icon--facebook"><img src="/assets/facebook_icon.svg" alt="Facebook" /></span>
+            <div><strong>Facebook</strong><small>Hỗ trợ khách hàng qua Messenger</small></div>
+            <ChevronRight size={18} />
+          </a>
+          <a className="contact-widget__item" href={ZALO_CONTACT_URL} target="_blank" rel="noreferrer">
+            <span className="contact-widget__icon contact-widget__icon--zalo"><img src="/assets/zalo_icon.svg" alt="" /></span>
+            <div><strong>Zalo</strong><small>Hỗ trợ khách hàng qua Zalo</small></div>
+            <ChevronRight size={18} />
+          </a>
+          <p className="contact-widget__note">Lưu ý: Tất cả nền tảng hỗ trợ như nhau, vui lòng chỉ nhắn 1 nền tảng để được hỗ trợ nhanh nhất.</p>
+        </section>
+      )}
+      <button className={`contact-float-button ${open ? 'is-open' : ''}`} type="button" aria-label={open ? 'Đóng liên hệ' : 'Mở liên hệ'} onClick={() => setOpen((value) => !value)}>
+        {open ? <X size={30} /> : <Headset size={30} />}
+      </button>
+    </>
   );
 }
 
@@ -81,7 +106,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<ProtectedRoute admin><AdminPage /></ProtectedRoute>} />
       </Routes>
-      <ZaloContactButton />
+      <ContactWidget />
       <ScrollToTopButton />
       <Toast />
     </>

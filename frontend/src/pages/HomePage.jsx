@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign,
-  Clock3, CreditCard, Gift, GraduationCap, Headphones, PackageCheck,
-  Palette, ShieldCheck, ShoppingBag, Sparkles, Star, Zap,
+  ArrowRight, BadgeCheck, BookOpenCheck, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign,
+  Clock3, Cpu, Gift, Headphones, MessageCircle, PackageCheck,
+  PenTool, ShoppingBag, Star, Zap,
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import SectionHeading from '../components/SectionHeading';
@@ -11,12 +11,12 @@ import { faqs, testimonials } from '../data/products';
 import { useCatalog } from '../context/CatalogContext';
 
 const categoryIcons = {
-  GraduationCap,
-  Sparkles,
-  Palette,
+  GraduationCap: BookOpenCheck,
+  Sparkles: Cpu,
+  Palette: PenTool,
   BriefcaseBusiness,
 };
-const DefaultCategoryIcon = Sparkles;
+const DefaultCategoryIcon = PackageCheck;
 
 const benefits = [
   [BadgeCheck, 'Tài khoản bản quyền', 'Nguồn cung minh bạch, kiểm tra trước khi giao'],
@@ -27,9 +27,8 @@ const benefits = [
 
 const steps = [
   [ShoppingBag, 'Chọn sản phẩm', 'Tìm đúng ứng dụng và gói sử dụng phù hợp.'],
-  [CreditCard, 'Thanh toán', 'Chuyển khoản an toàn với nội dung đơn hàng riêng.'],
-  [PackageCheck, 'Nhận tài khoản', 'Thông tin được bàn giao tại trang đơn hàng.'],
-  [ShieldCheck, 'Dùng & bảo hành', 'Hỗ trợ khi có lỗi theo chính sách từng gói.'],
+  [PackageCheck, 'Chọn gói sử dụng', 'Kiểm tra thời hạn, giá và thêm sản phẩm vào giỏ.'],
+  [MessageCircle, 'Liên hệ Zalo', 'Tạo đơn, thanh toán và nhận tài khoản qua kênh hỗ trợ.'],
 ];
 
 export default function HomePage() {
@@ -146,12 +145,12 @@ export default function HomePage() {
         <div className="container split-feature">
           <div className="split-feature__copy">
             <span className="eyebrow">Mua hàng đơn giản</span>
-            <h2>Chỉ 4 bước để bắt đầu</h2>
-            <p>Luồng mua được tối giản, thông tin sản phẩm và điều kiện sử dụng hiển thị rõ ràng trước khi thanh toán.</p>
+            <h2>Chỉ 3 bước để bắt đầu</h2>
+            <p>Trao đổi trực tiếp qua Zalo, xác nhận rõ sản phẩm, mức giá và điều kiện sử dụng trước khi thanh toán.</p>
             <div className="trust-list">
-              <span><Check size={17} /> Không cần chờ tư vấn mới đặt hàng</span>
-              <span><Check size={17} /> Theo dõi trạng thái đơn ngay trong tài khoản</span>
-              <span><Check size={17} /> Thông tin bàn giao được bảo vệ</span>
+              <span><Check size={17} /> Gửi nhu cầu và nhận tư vấn nhanh qua Zalo</span>
+              <span><Check size={17} /> Xác nhận đơn hàng, giá và thời hạn sử dụng</span>
+              <span><Check size={17} /> Không yêu cầu mật khẩu, mã OTP hoặc dữ liệu đăng nhập</span>
             </div>
             <Link to="/guide" className="text-link">Xem hướng dẫn chi tiết <ArrowRight size={16} /></Link>
           </div>
@@ -181,7 +180,6 @@ export default function HomePage() {
                 <div className="testimonial-card__stars">{Array.from({ length: item.rating }).map((_, i) => <Star key={i} size={16} fill="currentColor" />)}</div>
                 <p>“{item.content}”</p>
                 <div className="testimonial-card__person">
-                  <span>{item.avatar}</span>
                   <div><strong>{item.name}</strong><small>Đã mua {item.product}</small></div>
                   <BadgeCheck size={19} />
                 </div>

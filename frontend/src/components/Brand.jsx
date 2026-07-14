@@ -12,7 +12,7 @@ export default function Brand({ compact = false }) {
       </span>
       <span className="brand__copy">
         <strong>Hải Premium</strong>
-        {!compact && <small>Premium Apps · Giá tốt mỗi ngày</small>}
+        {!compact && <small>Nâng cấp tài khoản Premium chính chủ</small>}
       </span>
     </Link>
   );

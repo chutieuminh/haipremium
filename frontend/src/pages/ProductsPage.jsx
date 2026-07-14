@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronDown, Filter, Search, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
@@ -6,19 +6,38 @@ import { useCatalog } from '../context/CatalogContext';
 import { useStore } from '../context/StoreContext';
 
 const PAGE_SIZE = 12;
+const sortOptions = [
+  ['featured', 'Nổi bật'],
+  ['popular', 'Bán chạy nhất'],
+  ['price-asc', 'Giá thấp đến cao'],
+  ['price-desc', 'Giá cao đến thấp'],
+  ['rating', 'Đánh giá cao nhất'],
+  ['discount', 'Giảm nhiều nhất'],
+];
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { favorites } = useStore();
   const { categories, products, loading, error } = useCatalog();
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const sortRef = useRef(null);
 
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || 'all';
   const sort = searchParams.get('sort') || 'featured';
   const onlyFavorites = searchParams.get('favorites') === 'true';
   const maxPrice = Number(searchParams.get('maxPrice') || 500000);
+  const currentSortLabel = sortOptions.find(([value]) => value === sort)?.[1] || sortOptions[0][1];
+
+  useEffect(() => {
+    const closeSort = (event) => {
+      if (!sortRef.current?.contains(event.target)) setSortOpen(false);
+    };
+    document.addEventListener('pointerdown', closeSort);
+    return () => document.removeEventListener('pointerdown', closeSort);
+  }, []);
 
   const setParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
@@ -137,7 +156,29 @@ export default function ProductsPage() {
                 <h2>{onlyFavorites ? 'Sản phẩm yêu thích' : category === 'all' ? 'Tất cả sản phẩm' : categories.find((item) => (item.code || item.id) === category)?.name}</h2>
                 <p>Tìm thấy <strong>{filtered.length}</strong> sản phẩm phù hợp</p>
               </div>
-              <label className="sort-select">
+              <div className={`sort-select ${sortOpen ? 'is-open' : ''}`} ref={sortRef}>
+                <button type="button" className="sort-select__trigger" aria-expanded={sortOpen} onClick={() => setSortOpen((value) => !value)}>
+                  <SlidersHorizontal size={17} />
+                  <span>{currentSortLabel}</span>
+                  <ChevronDown size={16} />
+                </button>
+                <div className="sort-select__menu">
+                  {sortOptions.map(([value, label]) => (
+                    <button
+                      type="button"
+                      key={value}
+                      className={sort === value ? 'active' : ''}
+                      onClick={() => {
+                        setParam('sort', value);
+                        setSortOpen(false);
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="sort-select-native">
                 <SlidersHorizontal size={17} />
                 <select value={sort} onChange={(event) => setParam('sort', event.target.value)}>
                   <option value="featured">Nổi bật</option>

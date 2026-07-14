@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Heart, Menu, Search, ShoppingBag, UserRound, X, ChevronDown, Headphones, LogOut, Shield,
@@ -6,11 +6,11 @@ import {
 import Brand from './Brand';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
+import { useCatalog } from '../context/CatalogContext';
 
 const navItems = [
   ['/', 'Trang chủ'],
   ['/products', 'Sản phẩm'],
-  ['/products?category=ai', 'AI & công nghệ'],
   ['/products?sort=discount', 'Khuyến mãi'],
   ['/guide', 'Hướng dẫn'],
 ];
@@ -18,13 +18,24 @@ const navItems = [
 export default function Header() {
   const { cartCount, favorites, setCartOpen, notify } = useStore();
   const { user, logout } = useAuth();
+  const { categories } = useCatalog();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [userMenu, setUserMenu] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const categoryMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => { setMobileOpen(false); setUserMenu(false); }, [location.pathname, location.search]);
+  useEffect(() => { setMobileOpen(false); setUserMenu(false); setCategoryOpen(false); }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const closeCategory = (event) => {
+      if (!categoryMenuRef.current?.contains(event.target)) setCategoryOpen(false);
+    };
+    document.addEventListener('pointerdown', closeCategory);
+    return () => document.removeEventListener('pointerdown', closeCategory);
+  }, []);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -94,7 +105,13 @@ export default function Header() {
 
         <div className="header__nav desktop-only">
           <div className="container nav-row">
-            <button className="category-trigger" onClick={() => navigate('/products')}><Menu size={18} /> Danh mục sản phẩm <ChevronDown size={16} /></button>
+            <div className={`category-menu ${categoryOpen ? 'is-open' : ''}`} ref={categoryMenuRef}>
+              <button className="category-trigger" type="button" aria-expanded={categoryOpen} onClick={() => setCategoryOpen((value) => !value)}><Menu size={18} /> Danh mục sản phẩm <ChevronDown size={16} /></button>
+              <div className="category-menu__dropdown">
+                <Link to="/products" onClick={() => setCategoryOpen(false)}>Tất cả sản phẩm</Link>
+                {categories.map((item) => <Link key={item.id || item.code} to={`/products?category=${item.code || item.id}`} onClick={() => setCategoryOpen(false)}>{item.name}</Link>)}
+              </div>
+            </div>
             <nav className="nav-links">
               {navItems.map(([to, label]) => <NavLink key={to} to={to}>{label}</NavLink>)}
             </nav>

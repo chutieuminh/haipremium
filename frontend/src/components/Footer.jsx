@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container footer__grid">
         <div className="footer__brand">
           <Brand />
-          <p>Giải pháp tài khoản bản quyền với chi phí hợp lý, giao nhanh và hỗ trợ tận tâm.</p>
+          <p>Giải pháp nâng cấp tài khoản bản quyền với chi phí hợp lý, bảo mật và hỗ trợ tận tâm.</p>
           <div className="footer__socials">
             <a href="https://www.facebook.com/tranngochai.premiums" aria-label="Facebook"><Facebook size={18} /></a>
             <a href="https://zalo.me/0814831885" aria-label="Zalo"><MessageCircle size={18} /></a>  
