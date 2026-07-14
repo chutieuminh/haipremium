@@ -35,7 +35,7 @@ export default function LoginPage() {
       <section className="auth-visual">
         <div className="auth-visual__top"><Brand /></div>
         <div className="auth-visual__content">
-          <span className="eyebrow eyebrow--light"><Sparkles size={15} /> Hải Premium Accounts</span>
+          <span className="eyebrow eyebrow--light"> Hải Premium Accounts</span>
           <h1>Nâng cấp tài khoản Premium chính chủ</h1>
           <p>Nâng cấp toàn khoản chính chủ, hỗ trợ nhanh chóng, bảo hành lỗi 1 đổi 1 nếu có vấn đề.</p>
           <div className="auth-benefits"><span><Check size={17} /> Theo dõi trạng thái đơn hàng</span><span><Check size={17} /> Lưu sản phẩm yêu thích</span><span><Check size={17} /> Xem thông tin bàn giao bảo mật</span></div>
