@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Heart, Menu, Search, ShoppingBag, UserRound, X, ChevronDown, Headphones, LogOut, Shield,
+  BookmarkCheck, CircleUserRound, Menu, Search, ShoppingBasket, UserRound, X, ChevronDown, Headphones, LogOut, Shield,
 } from 'lucide-react';
 import Brand from './Brand';
 import { useStore } from '../context/StoreContext';
@@ -67,23 +67,23 @@ export default function Header() {
           <Brand />
           <form className="header-search" onSubmit={submitSearch}>
             <Search size={19} />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm ChatGPT, Canva, Microsoft 365..." aria-label="Tìm kiếm sản phẩm" />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm ChatGPT, Canva,..." aria-label="Tìm kiếm sản phẩm" />
             <button type="submit">Tìm kiếm</button>
           </form>
 
           <div className="header-actions">
             <Link className="header-action desktop-only" to="/products?favorites=true">
-              <span className="header-action__icon"><Heart size={21} /><b>{favorites.length}</b></span>
+              <span className="header-action__icon"><BookmarkCheck size={21} /><b>{favorites.length}</b></span>
               <span><small>Đã lưu</small><strong>Yêu thích</strong></span>
             </Link>
             <button className="header-action" type="button" onClick={() => setCartOpen(true)}>
-              <span className="header-action__icon"><ShoppingBag size={21} /><b>{cartCount}</b></span>
+              <span className="header-action__icon"><ShoppingBasket size={21} /><b>{cartCount}</b></span>
               <span className="desktop-only"><small>Giỏ hàng</small><strong>Sản phẩm</strong></span>
             </button>
             {user ? (
               <div className="header-user-wrap desktop-only">
                 <button className="header-action" type="button" onClick={() => setUserMenu((value) => !value)}>
-                  <span className="header-action__icon"><UserRound size={21} /></span>
+                  <span className="header-action__icon"><CircleUserRound size={21} /></span>
                   <span><small>Xin chào</small><strong>{user.fullName?.split(' ').slice(-1)[0]}</strong></span>
                   <ChevronDown size={15} />
                 </button>
@@ -96,7 +96,7 @@ export default function Header() {
               </div>
             ) : (
               <Link className="header-action desktop-only" to="/login">
-                <span className="header-action__icon"><UserRound size={21} /></span>
+                <span className="header-action__icon"><CircleUserRound size={21} /></span>
                 <span><small>Xin chào</small><strong>Đăng nhập</strong></span>
               </Link>
             )}

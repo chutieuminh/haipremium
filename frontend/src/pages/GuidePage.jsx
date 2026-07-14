@@ -4,14 +4,14 @@ import { ZALO_CONTACT_URL } from '../constants/contact';
 
 const guideSteps = [
   [Search, 'Tìm sản phẩm', 'Dùng thanh tìm kiếm hoặc bộ lọc để chọn ứng dụng phù hợp.'],
-  [ShoppingCart, 'Chọn gói', 'Kiểm tra thời hạn, loại tài khoản, giá và điều kiện sử dụng.'],
+  [ShoppingCart, 'Chọn gói', 'Kiểm tra loại tài khoản, giá và điều kiện sử dụng.'],
   [MessageCircle, 'Liên hệ Zalo', 'Liên hệ Zalo để thanh toán và nhận tài khoản nhanh chóng.'],
 ];
 
 export default function GuidePage() {
   return (
     <div className="page page--muted">
-      <section className="guide-hero"><div className="container"><span className="eyebrow">Trung tâm trợ giúp</span><h1>Mua tài khoản premium dễ dàng và an toàn</h1><p>Hướng dẫn từ lúc chọn sản phẩm đến khi nhận thông tin bàn giao.</p></div></section>
+      <section className="guide-hero"><div className="container"><span className="eyebrow">Trung tâm trợ giúp</span><h1>Nâng cấp tài khoản premium chính chủ nhanh chóng</h1><p>Hướng dẫn từ lúc chọn sản phẩm đến khi nhận thông tin bàn giao.</p></div></section>
       <section className="section"><div className="container">
         <div className="guide-steps">{guideSteps.map(([Icon,title,text], index) => <article key={title}><span>0{index+1}</span><i><Icon /></i><h2>{title}</h2><p>{text}</p>{index < guideSteps.length - 1 && <ChevronRight className="guide-arrow" />}</article>)}</div>
         <div className="guide-layout">

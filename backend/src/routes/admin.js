@@ -29,6 +29,7 @@ const orderInclude = [
   { model: OrderItem, as: 'items', include: [
     { model: Product, as: 'product', include: productInclude },
     { model: ProductPackage, as: 'package' },
+    { model: Review, required: false },
     { model: OrderDelivery, as: 'deliveries', required: false },
   ] },
   { model: Payment, as: 'payments' },
@@ -38,13 +39,15 @@ router.get('/dashboard', asyncHandler(async (_req, res) => {
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const [todayRevenue, monthRevenue, totalOrders, pendingOrders, completedOrders, customers, inventoryAvailable, lowStock, recentOrders, topProducts] = await Promise.all([
+  const [todayRevenue, monthRevenue, totalOrders, todayOrders, pendingOrders, completedOrders, customers, newCustomers, inventoryAvailable, lowStock, recentOrders, topProducts] = await Promise.all([
     Order.sum('total', { where: { orderStatus: 'completed', completedAt: { [Op.gte]: startOfDay } } }),
     Order.sum('total', { where: { orderStatus: 'completed', completedAt: { [Op.gte]: startOfMonth } } }),
     Order.count(),
+    Order.count({ where: { createdAt: { [Op.gte]: startOfDay } } }),
     Order.count({ where: { orderStatus: { [Op.in]: ['pending_payment', 'payment_review', 'paid', 'processing'] } } }),
     Order.count({ where: { orderStatus: 'completed' } }),
     User.count({ where: { role: 'customer' } }),
+    User.count({ where: { role: 'customer', createdAt: { [Op.gte]: startOfDay } } }),
     Inventory.count({ where: { status: 'AVAILABLE' } }),
     ProductPackage.count({ where: { stock: { [Op.lte]: 5 }, isActive: true } }),
     Order.findAll({ include: orderInclude, order: [['createdAt', 'DESC']], limit: 8 }),
@@ -61,8 +64,8 @@ router.get('/dashboard', asyncHandler(async (_req, res) => {
 
   return success(res, {
     stats: {
-      todayRevenue: numberValue(todayRevenue), monthRevenue: numberValue(monthRevenue), totalOrders,
-      pendingOrders, completedOrders, customers, inventoryAvailable, lowStock,
+      todayRevenue: numberValue(todayRevenue), monthRevenue: numberValue(monthRevenue), totalOrders, todayOrders,
+      pendingOrders, completedOrders, customers, newCustomers, inventoryAvailable, lowStock,
     },
     revenueChart: revenueRows.map((row) => ({ date: row.date, revenue: numberValue(row.revenue) })),
     recentOrders: recentOrders.map((order) => serializeOrder(order)),
@@ -590,6 +593,28 @@ const refreshProductReviewStats = async (productId) => {
   const averageRating = reviewCount ? reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0) / reviewCount : 0;
   await Product.update({ averageRating, reviewCount }, { where: { id: productId } });
 };
+
+router.post('/reviews', [
+  body('orderItemId').isInt({ min: 1 }),
+  body('rating').isInt({ min: 1, max: 5 }),
+  body('content').trim().isLength({ min: 5, max: 2000 }),
+  body('isVisible').optional().isBoolean(),
+], validate, asyncHandler(async (req, res) => {
+  const orderItem = await OrderItem.findByPk(req.body.orderItemId, { include: [{ model: Order, as: 'order' }] });
+  if (!orderItem || !orderItem.order) throw new AppError('Không tìm thấy sản phẩm trong đơn hàng.', 404);
+  if (await Review.findOne({ where: { orderItemId: orderItem.id } })) throw new AppError('Sản phẩm trong đơn này đã có đánh giá.', 409);
+  const review = await Review.create({
+    userId: orderItem.order.userId,
+    productId: orderItem.productId,
+    orderItemId: orderItem.id,
+    rating: req.body.rating,
+    content: req.body.content,
+    isVisible: req.body.isVisible ?? true,
+  });
+  await refreshProductReviewStats(orderItem.productId);
+  await audit(req, 'REVIEW_CREATED_BY_ADMIN', 'Review', review.id);
+  return success(res, review, 'Đã thêm đánh giá.', 201);
+}));
 
 router.put('/reviews/:id', [
   body('rating').optional().isInt({ min: 1, max: 5 }),

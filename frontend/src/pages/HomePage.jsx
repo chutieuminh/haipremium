@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, BookOpenCheck, BriefcaseBusiness, Check, ChevronDown, CircleDollarSign,
-  Clock3, Cpu, Gift, Headphones, MessageCircle, PackageCheck,
+  ArrowRight, BadgeCheck, BadgeDollarSign, BookOpenCheck, BriefcaseBusiness, Check, ChevronDown,
+  Clock3, Cpu, Headset, MessageCircle, MessageCircleMore, PackageCheck,
   PenTool, ShoppingBag, Star, Zap,
+  TicketPercent,
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import SectionHeading from '../components/SectionHeading';
+import { api, assetUrl } from '../api/client';
 import { faqs, testimonials } from '../data/products';
 import { useCatalog } from '../context/CatalogContext';
 
@@ -19,10 +21,10 @@ const categoryIcons = {
 const DefaultCategoryIcon = PackageCheck;
 
 const benefits = [
-  [BadgeCheck, 'Tài khoản bản quyền', 'Nguồn cung minh bạch, kiểm tra trước khi giao'],
-  [CircleDollarSign, 'Giá cả hợp lý', 'Nhiều gói linh hoạt, tối ưu theo nhu cầu'],
-  [Zap, 'Giao hàng nhanh', 'Xử lý đơn và bàn giao trong thời gian ngắn'],
-  [Headphones, 'Hỗ trợ tận tâm', 'Đồng hành trong suốt thời gian sử dụng'],
+  [MessageCircleMore, 'Tư vấn rõ ràng', 'Giải đáp đầy đủ trước khi khách hàng xác nhận mua.'],
+  [BadgeDollarSign, 'Đa dạng lựa chọn', 'Nhiều gói linh hoạt, tối ưu theo nhu cầu'],
+  [Zap, 'Quy trình đơn giản', 'Đặt hàng, thanh toán và nhận hướng dẫn nhanh chóng.'],
+  [Headset, 'Hỗ trợ tận tâm', 'Đồng hành trong suốt thời gian sử dụng'],
 ];
 
 const steps = [
@@ -33,16 +35,27 @@ const steps = [
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState(0);
+  const [banners, setBanners] = useState([]);
   const { categories, products, loading, error } = useCatalog();
   const featuredProducts = products.filter((item) => item.featured || item.isFeatured).slice(0, 8);
   const logoProducts = products.slice(0, 32);
+  const heroBanner = banners[0];
+  const promoBanner = banners[1];
+
+  useEffect(() => {
+    let active = true;
+    api.get('/banners')
+      .then((payload) => { if (active) setBanners(payload.data || []); })
+      .catch(() => { if (active) setBanners([]); });
+    return () => { active = false; };
+  }, []);
 
   return (
     <>
       <section className="hero-section">
         <div className="container">
           <div className="hero-card">
-            <img src="/assets/hero.jpg" alt="Hải Premium cung cấp tài khoản bản quyền giá hợp lý" />
+            <img src={assetUrl(heroBanner?.imageUrl) || '/assets/hero.jpg'} alt={heroBanner?.title || 'Hải Premium cung cấp tài khoản bản quyền giá hợp lý'} />
             <div className="hero-card__cta">
               <Link to="/products" className="button button--primary button--large">Khám phá sản phẩm <ArrowRight size={18} /></Link>
               <Link to="/products?sort=discount" className="button button--white button--large">Xem ưu đãi</Link>
@@ -111,14 +124,14 @@ export default function HomePage() {
 
       <section className="section section--compact">
         <div className="container">
-          <div className="promo-banner">
-            <div className="promo-banner__icon"><Gift /></div>
+          <div className="promo-banner" style={promoBanner?.imageUrl ? { '--promo-image': `url("${assetUrl(promoBanner.imageUrl)}")` } : undefined}>
+            <div className="promo-banner__icon"><TicketPercent /></div>
             <div>
               <span>Ưu đãi khách hàng mới</span>
-              <h2>Giảm 10% cho đơn hàng đầu tiên</h2>
-              <p>Nhập mã <strong>HAIPREMIUM10</strong> khi thanh toán. Áp dụng cho đơn từ 199.000đ.</p>
+              <h2>{promoBanner?.title || 'Giảm 10% cho đơn hàng đầu tiên'}</h2>
+              <p>{promoBanner?.subtitle || <>Nhập mã <strong>HAIPREMIUM10</strong> khi thanh toán. Áp dụng cho đơn từ 199.000đ.</>}</p>
             </div>
-            <Link to="/products" className="button button--white">Mua ngay <ArrowRight size={17} /></Link>
+            <Link to={promoBanner?.linkUrl || '/products'} className="button button--white">Mua ngay <ArrowRight size={17} /></Link>
           </div>
         </div>
       </section>
@@ -126,9 +139,9 @@ export default function HomePage() {
       <section className="section section--muted logo-showcase-section">
         <div className="container">
           <SectionHeading
-            eyebrow="Hệ sinh thái sản phẩm"
-            title="Ứng dụng premium bạn đang tìm kiếm"
-            description="Danh mục đa dạng, cập nhật liên tục và có nhiều thời hạn sử dụng."
+            eyebrow="Khám phá sản phẩm"
+            title="Chọn ứng dụng phù hợp với nhu cầu"
+            description="Khám phá các gói dịch vụ theo nhu cầu học tập, làm việc và sáng tạo."
           />
           <div className="logo-cloud">
             {logoProducts.map((product) => (
@@ -170,8 +183,8 @@ export default function HomePage() {
       <section className="section section--dark">
         <div className="container">
           <SectionHeading
-            eyebrow="Khách hàng nói gì về Hải Premium"
-            title="Trải nghiệm thực tế tại Hải Premium"
+            eyebrow="Trải nghiệm từ khách hàng"
+            title="Đánh giá của người dùng"
             description="Từng phản hồi, đánh giá là động lực để chúng tôi cải thiện chất lượng sản phẩm và hỗ trợ."
           />
           <div className="testimonial-grid">

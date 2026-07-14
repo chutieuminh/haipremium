@@ -47,7 +47,7 @@ export default function LoginPage() {
         <Link className="auth-back" to="/">← Về trang chủ</Link>
         <div className="auth-card">
           <div className="auth-tabs"><button className={tab === 'login' ? 'active' : ''} onClick={() => setTab('login')}>Đăng nhập</button><button className={tab === 'register' ? 'active' : ''} onClick={() => setTab('register')}>Đăng ký</button></div>
-          <div className="auth-card__heading"><h2>{tab === 'login' ? 'Chào mừng bạn quay lại' : 'Tạo tài khoản Hải Premium'}</h2><p>{tab === 'login' ? 'Đăng nhập để quản lý đơn hàng và sản phẩm đã mua.' : 'Chỉ mất chưa đến một phút để bắt đầu.'}</p></div>
+          <div className="auth-card__heading"><h2>{tab === 'login' ? 'Chào mừng bạn quay lại' : 'Tham gia Hải Premium'}</h2><p>{tab === 'login' ? 'Đăng nhập để quản lý đơn hàng và sản phẩm đã mua.' : 'Tạo tài khoản để bắt đầu sử dụng các tính năng đặc biệt.'}</p></div>
           <form onSubmit={submit}>
             {tab === 'register' && <label className="form-field"><span>Họ và tên</span><input required value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} placeholder="Nguyễn Văn A" /></label>}
             <label className="form-field"><span>Email</span><div className="input-with-icon"><Mail size={18} /><input type="email" required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="email@example.com" /></div></label>

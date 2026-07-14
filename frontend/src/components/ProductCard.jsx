@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency, getCategory } from '../data/products';
 import { useStore } from '../context/StoreContext';
@@ -21,8 +21,13 @@ export default function ProductCard({ product }) {
         </Link>
         <span className="product-card__badge">{product.badge || 'Ưu đãi'}</span>
         <button
+          type="button"
           className={`favorite-button ${isFavorite ? 'is-active' : ''}`}
-          onClick={() => toggleFavorite(product.id)}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleFavorite(product.id);
+          }}
           aria-label={isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}
         >
           <Heart size={19} fill={isFavorite ? 'currentColor' : 'none'} />
@@ -31,12 +36,6 @@ export default function ProductCard({ product }) {
       <div className="product-card__body">
         <span className="product-card__category">{category?.name || 'Sản phẩm số'}</span>
         <Link className="product-card__name" to={`/products/${product.slug}`}>{product.name}</Link>
-        <div className="rating-row">
-          <Star size={15} fill="currentColor" />
-          <strong>{Number(product.rating || product.averageRating || 0).toFixed(1)}</strong>
-          <span>({product.reviewCount || 0})</span>
-          <i>Đã bán {Number(product.soldCount || 0).toLocaleString('vi-VN')}</i>
-        </div>
         <div className="product-card__price">
           <div><strong>{formatCurrency(price)}</strong>{originalPrice > price && <del>{formatCurrency(originalPrice)}</del>}</div>
           {discount > 0 && <span>-{discount}%</span>}

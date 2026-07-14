@@ -73,7 +73,7 @@ export default function CartDrawer() {
         {cart.length > 0 && (
           <div className="cart-drawer__foot">
             <div className="cart-summary-row"><span>Tạm tính</span><strong>{formatCurrency(cartTotal)}</strong></div>
-            <p>Phí thanh toán (nếu có) được hiển thị ở bước tiếp theo.</p>
+            <p></p>
             <Link className="button button--primary button--block" to="/cart" onClick={() => setCartOpen(false)}>Xem giỏ hàng</Link>
             <button className="button button--ghost button--block" type="button" onClick={createOrderAndContact} disabled={creatingOrder}>{creatingOrder ? 'Đang tạo đơn...' : 'Liên hệ thanh toán'}</button>
           </div>

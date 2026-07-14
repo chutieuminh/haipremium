@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Bell, ChevronRight, CreditCard, Heart, KeyRound, LayoutDashboard, LifeBuoy,
-  LogOut, Package, Settings, ShieldCheck, ShoppingBag, Star, UserRound,
+  BadgeCheck, Bell, ChevronRight, Heart, LayoutDashboard, LifeBuoy,
+  LogOut, Package, ReceiptText, Settings, ShieldCheck, ShoppingBag, Star, UserRound, WalletCards,
 } from 'lucide-react';
 import { formatCurrency } from '../data/products';
 import { useStore } from '../context/StoreContext';
@@ -33,7 +33,7 @@ export default function AccountPage() {
   const [supportRequests, setSupportRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ fullName: '', phone: '' });
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [supportForm, setSupportForm] = useState({ subject: '', message: '', orderId: '' });
   const [reviewForm, setReviewForm] = useState({ orderItemId: '', rating: 5, content: '' });
   const [ratingDragging, setRatingDragging] = useState(false);
@@ -76,8 +76,15 @@ export default function AccountPage() {
 
   const changePassword = async (event) => {
     event.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      notify('Mật khẩu mới nhập lại không khớp.', 'error');
+      return;
+    }
     try {
-      await api.put('/auth/change-password', passwordForm, { auth: true });
+      await api.put('/auth/change-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      }, { auth: true });
       notify('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
       await logout();
       navigate('/login');
@@ -129,22 +136,22 @@ export default function AccountPage() {
     <div className="page page--muted account-page">
       <div className="container account-layout">
         <aside className="account-sidebar">
-          <div className="account-user"><span>{user?.fullName?.split(' ').map((word) => word[0]).slice(-2).join('').toUpperCase() || 'HP'}</span><div><strong>{user?.fullName}</strong><small>{user?.email}</small></div></div>
+          <div className="account-user"><div><strong>{user?.fullName}</strong><small>{user?.email}</small></div></div>
           <nav>{accountNav.map(([Icon, label]) => <button key={label} className={active === label ? 'active' : ''} onClick={() => setActive(label)}><Icon size={18} /> {label}{label === 'Sản phẩm yêu thích' && <b>{favorites.length}</b>}</button>)}</nav>
           <button className="account-logout" onClick={signOut}><LogOut size={18} /> Đăng xuất</button>
         </aside>
 
         <main className="account-main">
-          <div className="account-topline"><div><span className="eyebrow">Tài khoản khách hàng</span><h1>Xin chào, {user?.fullName?.split(' ').slice(-1)[0]} 👋</h1><p>Quản lý đơn hàng, thông tin bàn giao và hỗ trợ tại một nơi.</p></div><button className="notification-button"><Bell size={20} /><b>{orders.filter((order) => order.orderStatus !== 'completed').length}</b></button></div>
+          <div className="account-topline"><div><span className="eyebrow">Trang tài khoản</span><h1>Chào {user?.fullName?.split(' ').slice(-1)[0]}</h1><p>Theo dõi đơn hàng và nhận hỗ trợ nhanh chóng.</p></div><button className="notification-button"><Bell size={20} /><b>{orders.filter((order) => order.orderStatus !== 'completed').length}</b></button></div>
 
           {loading && <div className="loading-panel">Đang tải dữ liệu tài khoản...</div>}
 
           {!loading && active === 'Tổng quan' && (
             <>
               <div className="account-stat-grid">
-                <article><span><ShoppingBag /></span><div><small>Tổng đơn hàng</small><strong>{orders.length}</strong><p>{completedOrders.length} đơn đã hoàn thành</p></div></article>
-                <article><span><CreditCard /></span><div><small>Tổng chi tiêu</small><strong>{formatCurrency(totalSpent)}</strong><p>Chỉ tính đơn hoàn thành</p></div></article>
-                <article><span><KeyRound /></span><div><small>Tài khoản đã mua</small><strong>{completedOrders.reduce((sum, order) => sum + (order.items?.length || 0), 0)}</strong><p>Được bảo vệ theo chủ đơn</p></div></article>
+                <article><span><ReceiptText /></span><div><small>Tổng đơn hàng</small><strong>{orders.length}</strong><p>{completedOrders.length} đơn đã hoàn thành</p></div></article>
+                <article><span><WalletCards /></span><div><small>Tổng chi tiêu</small><strong>{formatCurrency(totalSpent)}</strong><p>Chỉ tính đơn hoàn thành</p></div></article>
+                <article><span><BadgeCheck /></span><div><small>Tài khoản đã mua</small><strong>{completedOrders.reduce((sum, order) => sum + (order.items?.length || 0), 0)}</strong><p>Được bảo vệ theo chủ đơn</p></div></article>
                 <article><span><Heart /></span><div><small>Sản phẩm yêu thích</small><strong>{favorites.length}</strong><p>Đang lưu để xem sau</p></div></article>
               </div>
               <section className="account-panel">
@@ -187,7 +194,7 @@ export default function AccountPage() {
 
           {!loading && active === 'Thông tin cá nhân' && <section className="account-panel"><div className="account-panel__head"><div><h2>Thông tin cá nhân</h2><p>Cập nhật họ tên và số điện thoại nhận hỗ trợ.</p></div></div><form className="account-form" onSubmit={saveProfile}><label className="form-field"><span>Họ và tên</span><input required value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} /></label><label className="form-field"><span>Email</span><input value={user?.email || ''} disabled /></label><label className="form-field"><span>Số điện thoại</span><input value={profile.phone} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label><button className="button button--primary">Lưu thay đổi</button></form></section>}
 
-          {!loading && active === 'Đổi mật khẩu' && <section className="account-panel"><div className="account-panel__head"><div><h2>Đổi mật khẩu</h2><p>Mật khẩu mới phải có ít nhất 8 ký tự.</p></div></div><form className="account-form" onSubmit={changePassword}><label className="form-field"><span>Mật khẩu hiện tại</span><input type="password" required value={passwordForm.currentPassword} onChange={(event) => setPasswordForm({ ...passwordForm, currentPassword: event.target.value })} /></label><label className="form-field"><span>Mật khẩu mới</span><input type="password" minLength="8" required value={passwordForm.newPassword} onChange={(event) => setPasswordForm({ ...passwordForm, newPassword: event.target.value })} /></label><button className="button button--primary">Đổi mật khẩu</button></form></section>}
+          {!loading && active === 'Đổi mật khẩu' && <section className="account-panel"><div className="account-panel__head"><div><h2>Đổi mật khẩu</h2><p>Mật khẩu mới phải có ít nhất 8 ký tự.</p></div></div><form className="account-form" onSubmit={changePassword}><label className="form-field"><span>Mật khẩu hiện tại</span><input type="password" required value={passwordForm.currentPassword} onChange={(event) => setPasswordForm({ ...passwordForm, currentPassword: event.target.value })} /></label><label className="form-field"><span>Mật khẩu mới</span><input type="password" minLength="8" required value={passwordForm.newPassword} onChange={(event) => setPasswordForm({ ...passwordForm, newPassword: event.target.value })} /></label><label className="form-field"><span>Nhập lại mật khẩu mới</span><input type="password" minLength="8" required value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm({ ...passwordForm, confirmPassword: event.target.value })} /></label><button className="button button--primary">Đổi mật khẩu</button></form></section>}
 
           {!loading && active === 'Yêu cầu hỗ trợ' && <section className="account-panel"><div className="account-panel__head"><div><h2>Yêu cầu hỗ trợ</h2><p>Gửi vấn đề kèm đơn hàng liên quan.</p></div></div><form className="account-form" onSubmit={sendSupport}><label className="form-field"><span>Đơn hàng liên quan</span><select value={supportForm.orderId} onChange={(event) => setSupportForm({ ...supportForm, orderId: event.target.value })}><option value="">Không chọn đơn hàng</option>{orders.map((order) => <option key={order.id} value={order.id}>{order.orderCode}</option>)}</select></label><label className="form-field"><span>Tiêu đề</span><input required minLength="3" value={supportForm.subject} onChange={(event) => setSupportForm({ ...supportForm, subject: event.target.value })} /></label><label className="form-field"><span>Nội dung</span><textarea required minLength="10" rows="5" value={supportForm.message} onChange={(event) => setSupportForm({ ...supportForm, message: event.target.value })} /></label><button className="button button--primary">Gửi yêu cầu</button></form><div className="support-request-list">{supportRequests.map((request) => <article key={request.id}><strong>{request.subject}</strong><span>{request.status}</span><p>{request.message}</p>{request.adminReply && <blockquote>Phản hồi: {request.adminReply}</blockquote>}</article>)}</div></section>}
         </main>
