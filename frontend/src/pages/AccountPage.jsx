@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  BadgeCheck, Bell, ChevronRight, Heart, LayoutDashboard, LifeBuoy,
+  BadgeCheck, Bell, ChevronDown, ChevronRight, Heart, LayoutDashboard, LifeBuoy,
   LogOut, Package, ReceiptText, Settings, ShieldCheck, ShoppingBag, Star, UserRound, WalletCards,
 } from 'lucide-react';
 import { formatCurrency } from '../data/products';
@@ -37,10 +37,13 @@ export default function AccountPage() {
   const [supportForm, setSupportForm] = useState({ subject: '', message: '', orderId: '' });
   const [reviewForm, setReviewForm] = useState({ orderItemId: '', rating: 5, content: '' });
   const [ratingDragging, setRatingDragging] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { favorites, notify } = useStore();
   const { user, updateProfile, logout } = useAuth();
   const { products } = useCatalog();
   const navigate = useNavigate();
+
+  useEffect(() => { setAccountMenuOpen(false); }, [active]);
 
   const loadAccount = async () => {
     setLoading(true);
@@ -135,8 +138,9 @@ export default function AccountPage() {
   return (
     <div className="page page--muted account-page">
       <div className="container account-layout">
-        <aside className="account-sidebar">
-          <div className="account-user"><div><strong>{user?.fullName}</strong><small>{user?.email}</small></div></div>
+        <aside className={`account-sidebar ${accountMenuOpen ? 'is-menu-open' : ''}`}>
+          <div className="account-user" role="button" tabIndex={0} aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setAccountMenuOpen((value) => !value); } }}><div><strong>{user?.fullName}</strong><small>{user?.email}</small></div></div>
+          <button className="account-menu-toggle" type="button" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((value) => !value)}><span>Menu tài khoản</span><ChevronDown size={18} /></button>
           <nav>{accountNav.map(([Icon, label]) => <button key={label} className={active === label ? 'active' : ''} onClick={() => setActive(label)}><Icon size={18} /> {label}{label === 'Sản phẩm yêu thích' && <b>{favorites.length}</b>}</button>)}</nav>
           <button className="account-logout" onClick={signOut}><LogOut size={18} /> Đăng xuất</button>
         </aside>

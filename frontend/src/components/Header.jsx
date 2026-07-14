@@ -27,6 +27,19 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isMobileNavActive = (to) => {
+    const [path, queryString] = to.split('?');
+    if (location.pathname !== path) return false;
+    if (queryString) return location.search === `?${queryString}`;
+    const params = new URLSearchParams(location.search);
+    return path !== '/products' || (params.get('sort') !== 'discount' && params.get('favorites') !== 'true');
+  };
+  const mobileNavState = location.pathname === '/products'
+    ? new URLSearchParams(location.search).get('favorites') === 'true'
+      ? 'favorites'
+      : new URLSearchParams(location.search).get('sort') === 'discount' ? 'promotions' : 'products'
+    : location.pathname.slice(1) || 'home';
+
   useEffect(() => { setMobileOpen(false); setUserMenu(false); setCategoryOpen(false); }, [location.pathname, location.search]);
 
   useEffect(() => {
@@ -125,8 +138,8 @@ export default function Header() {
           <aside className="mobile-menu" onClick={(event) => event.stopPropagation()}>
             <div className="mobile-menu__header"><Brand compact /><button className="icon-button" onClick={() => setMobileOpen(false)} aria-label="Đóng menu"><X /></button></div>
             <form className="mobile-search" onSubmit={submitSearch}><Search size={18} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm sản phẩm..." /></form>
-            <nav className="mobile-nav">
-              {navItems.map(([to, label]) => <Link key={to} to={to}>{label}</Link>)}
+            <nav className={`mobile-nav mobile-nav--${mobileNavState}`}>
+              {navItems.map(([to, label]) => <Link key={to} to={to} className={isMobileNavActive(to) ? 'is-active' : ''} aria-current={isMobileNavActive(to) ? 'page' : undefined}>{label}</Link>)}
               {user ? <Link to={user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Trang quản trị' : 'Tài khoản của tôi'}</Link> : <Link to="/login">Đăng nhập / Đăng ký</Link>}
               <Link to="/products?favorites=true">Sản phẩm yêu thích ({favorites.length})</Link>
               {user && <button className="mobile-logout" onClick={signOut}>Đăng xuất</button>}
