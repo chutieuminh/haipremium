@@ -7,13 +7,21 @@ import { useStore } from '../context/StoreContext';
 
 const PAGE_SIZE = 12;
 const sortOptions = [
-  ['featured', 'Nổi bật'],
-  ['popular', 'Bán chạy nhất'],
+  ['default', 'Sắp xếp mặc định'],
   ['price-asc', 'Giá thấp đến cao'],
   ['price-desc', 'Giá cao đến thấp'],
   ['rating', 'Đánh giá cao nhất'],
   ['discount', 'Giảm nhiều nhất'],
 ];
+
+function getProductBadgeType(product) {
+  if (!product.badge) return null;
+  const badge = String(product.badge).trim().toLocaleLowerCase('vi-VN');
+  if (badge === 'hot' || badge === 'nổi bật') return 'hot';
+  if (badge === 'bán chạy' || badge === 'ban chay') return 'best-seller';
+  if (badge === 'mới' || badge === 'moi') return 'new';
+  return null;
+}
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,8 +34,9 @@ export default function ProductsPage() {
 
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || 'all';
-  const sort = searchParams.get('sort') || 'featured';
+  const sort = searchParams.get('sort') || 'default';
   const onlyFavorites = searchParams.get('favorites') === 'true';
+  const badgeFilters = (searchParams.get('badges') || '').split(',').filter(Boolean);
   const maxPrice = Number(searchParams.get('maxPrice') || 500000);
   const currentSortLabel = sortOptions.find(([value]) => value === sort)?.[1] || sortOptions[0][1];
 
@@ -41,10 +50,17 @@ export default function ProductsPage() {
 
   const setParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
-    if (!value || value === 'all' || value === 'featured' || value === false) next.delete(key);
+    if (!value || value === 'all' || value === 'default' || value === false) next.delete(key);
     else next.set(key, value);
     setSearchParams(next);
     setPage(1);
+  };
+
+  const toggleBadgeFilter = (badge) => {
+    const nextBadges = new Set(badgeFilters);
+    if (nextBadges.has(badge)) nextBadges.delete(badge);
+    else nextBadges.add(badge);
+    setParam('badges', [...nextBadges].join(','));
   };
 
   const filtered = useMemo(() => {
@@ -54,18 +70,18 @@ export default function ProductsPage() {
       const matchCategory = category === 'all' || product.categoryId === category;
       const matchPrice = product.price <= maxPrice;
       const matchFavorite = !onlyFavorites || favorites.includes(product.id);
-      return matchQuery && matchCategory && matchPrice && matchFavorite;
+      const matchBadge = !badgeFilters.length || badgeFilters.includes(getProductBadgeType(product));
+      return matchQuery && matchCategory && matchPrice && matchFavorite && matchBadge;
     });
 
     return [...list].sort((a, b) => {
       if (sort === 'price-asc') return a.price - b.price;
       if (sort === 'price-desc') return b.price - a.price;
-      if (sort === 'popular') return b.soldCount - a.soldCount;
       if (sort === 'rating') return b.rating - a.rating;
       if (sort === 'discount') return (b.originalPrice - b.price) - (a.originalPrice - a.price);
-      return Number(b.featured) - Number(a.featured) || b.soldCount - a.soldCount;
+      return 0;
     });
-  }, [query, category, sort, onlyFavorites, favorites, maxPrice]);
+  }, [query, category, sort, onlyFavorites, favorites, maxPrice, badgeFilters]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -96,10 +112,6 @@ export default function ProductsPage() {
 
       <section className="section catalog-section">
         <div className="container catalog-layout">
-          <button className="button button--soft filter-mobile-toggle mobile-only" onClick={() => setFilterOpen(true)}>
-            <Filter size={18} /> Bộ lọc
-          </button>
-
           <aside className={`catalog-filter ${filterOpen ? 'is-open' : ''}`}>
             <div className="catalog-filter__mobile-head mobile-only">
               <strong>Bộ lọc sản phẩm</strong>
@@ -139,6 +151,18 @@ export default function ProductsPage() {
               <label className="check-row">
                 <input type="checkbox" checked={onlyFavorites} onChange={(event) => setParam('favorites', event.target.checked ? 'true' : false)} />
                 <span>Chỉ sản phẩm yêu thích</span>
+              </label>
+              <label className="check-row">
+                <input type="checkbox" checked={badgeFilters.includes('new')} onChange={() => toggleBadgeFilter('new')} />
+                <span>Mới</span>
+              </label>
+              <label className="check-row">
+                <input type="checkbox" checked={badgeFilters.includes('hot')} onChange={() => toggleBadgeFilter('hot')} />
+                <span>HOT</span>
+              </label>
+              <label className="check-row">
+                <input type="checkbox" checked={badgeFilters.includes('best-seller')} onChange={() => toggleBadgeFilter('best-seller')} />
+                <span>Bán chạy</span>
               </label>
               <label className="check-row"><input type="checkbox" defaultChecked /><span>Còn hàng</span></label>
               <label className="check-row"><input type="checkbox" /><span>Đang giảm giá</span></label>
@@ -181,8 +205,7 @@ export default function ProductsPage() {
               <label className="sort-select-native">
                 <SlidersHorizontal size={17} />
                 <select value={sort} onChange={(event) => setParam('sort', event.target.value)}>
-                  <option value="featured">Nổi bật</option>
-                  <option value="popular">Bán chạy nhất</option>
+                  <option value="default">Sắp xếp mặc định</option>
                   <option value="price-asc">Giá thấp đến cao</option>
                   <option value="price-desc">Giá cao đến thấp</option>
                   <option value="rating">Đánh giá cao nhất</option>
@@ -191,6 +214,10 @@ export default function ProductsPage() {
                 <ChevronDown size={16} />
               </label>
             </div>
+
+            <button className="button button--soft filter-mobile-toggle mobile-only" onClick={() => setFilterOpen(true)}>
+              <Filter size={18} /> Bộ lọc
+            </button>
 
             {loading ? <div className="loading-panel">Đang tải sản phẩm từ MySQL...</div> : visible.length > 0 ? (
               <>

@@ -140,7 +140,7 @@ export const serializeProduct = (product, { includeReviews = false } = {}) => {
     usageInstructions: plain.usageInstructions,
     terms: plain.terms,
     features: Array.isArray(plain.features) ? plain.features : [],
-    badge: plain.badge || (plain.isBestSeller ? 'Bán chạy' : plain.isFeatured ? 'Nổi bật' : 'Ưu đãi'),
+    badge: plain.badge || null,
     soldCount: plain.soldCount,
     viewCount: plain.viewCount,
     rating: numberValue(plain.averageRating),

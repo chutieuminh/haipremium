@@ -4,6 +4,17 @@ import { formatCurrency, getCategory } from '../data/products';
 import { useStore } from '../context/StoreContext';
 import { assetUrl } from '../api/client';
 
+function getBadge(product) {
+  if (!product.badge) return null;
+  const value = String(product.badge).trim().toLocaleLowerCase('vi-VN');
+
+  if (value === 'hot' || value === 'nổi bật') return { type: 'hot', label: 'HOT' };
+  if (value === 'mới' || value === 'moi') return { type: 'new', label: 'Mới' };
+  if (value === 'bán chạy' || value === 'ban chay') return { type: 'best-seller', label: 'Bán chạy' };
+
+  return null;
+}
+
 export default function ProductCard({ product }) {
   const { addToCart, toggleFavorite, favorites } = useStore();
   const category = product.category || getCategory(product.categoryId);
@@ -12,6 +23,7 @@ export default function ProductCard({ product }) {
   const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0;
   const isFavorite = favorites.includes(Number(product.id));
   const accent = category?.accent || '#1689d8';
+  const badge = getBadge(product);
 
   return (
     <article className={`product-card product-card--${product.slug}`} style={{ '--product-accent': accent }}>
@@ -19,7 +31,9 @@ export default function ProductCard({ product }) {
         <Link to={`/products/${product.slug}`} className="product-card__logo-link">
           <img src={assetUrl(product.logo)} alt={`Logo ${product.name}`} loading="lazy" />
         </Link>
-        <span className="product-card__badge">{product.badge || 'Ưu đãi'}</span>
+        {badge && <span className={`product-card__badge product-card__badge--${badge.type}`}>
+          {badge.label}
+        </span>}
         <button
           type="button"
           className={`favorite-button ${isFavorite ? 'is-active' : ''}`}
