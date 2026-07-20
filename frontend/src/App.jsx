@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import AccountPage from './pages/AccountPage';
 import AdminPage from './pages/AdminPage';
 import GuidePage from './pages/GuidePage';
+import PremiumMatchPage from './pages/PremiumMatchPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './context/AuthContext';
 import Toast from './components/Toast';
@@ -101,6 +102,7 @@ export default function App() {
           <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/guide" element={<GuidePage />} />
+          <Route path="/premium-match" element={<PremiumMatchPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />

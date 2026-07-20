@@ -157,9 +157,11 @@ export default function HomePage() {
       <section className="section">
         <div className="container split-feature">
           <div className="split-feature__copy">
-            <span className="eyebrow">Mua hàng đơn giản</span>
-            <h2>Chỉ 3 bước để bắt đầu</h2>
-            <p>Trao đổi trực tiếp qua Zalo, xác nhận rõ sản phẩm, mức giá và điều kiện sử dụng trước khi thanh toán.</p>
+            <SectionHeading
+              eyebrow="Hướng dẫn mua hàng"
+              title="Chỉ 3 bước để bắt đầu"
+              description="Trao đổi trực tiếp qua Zalo, xác nhận rõ sản phẩm, mức giá và điều kiện sử dụng trước khi thanh toán."
+            />
             <div className="trust-list">
               <span><Check size={17} /> Gửi nhu cầu và nhận tư vấn nhanh qua Zalo</span>
               <span><Check size={17} /> Xác nhận đơn hàng, giá và thời hạn sử dụng</span>
@@ -205,9 +207,11 @@ export default function HomePage() {
       <section className="section">
         <div className="container faq-layout">
           <div className="faq-layout__intro">
-            <span className="eyebrow">Câu hỏi thường gặp</span>
-            <h2>Bạn cần biết trước khi mua?</h2>
-            <p>Các thông tin quan trọng về bàn giao, bảo hành và cách sử dụng tài khoản kỹ thuật số.</p>
+            <SectionHeading
+              eyebrow="Câu hỏi thường gặp"
+              title="Bạn cần biết trước khi mua?"
+              description="Các thông tin quan trọng về bàn giao, bảo hành và cách sử dụng tài khoản kỹ thuật số."
+            />
             <div className="support-card">
               <span><Clock3 /></span>
               <div><strong>Cần hỗ trợ nhanh?</strong><p>Đội ngũ phản hồi từ 09:00 đến 17:00 mỗi ngày.</p></div>

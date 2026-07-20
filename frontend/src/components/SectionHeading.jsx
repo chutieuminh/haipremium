@@ -1,9 +1,9 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function SectionHeading({ eyebrow, title, description, to, action = 'Xem tất cả' }) {
+export default function SectionHeading({ eyebrow, title, description, to, action = 'Xem tất cả', variant = '' }) {
   return (
-    <div className="section-heading">
+    <div className={`section-heading ${variant ? `section-heading--${variant}` : ''}`}>
       <div>
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <h2>{title}</h2>

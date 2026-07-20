@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BookmarkCheck, CircleUserRound, Menu, Search, ShoppingBasket, UserRound, X, ChevronDown, Headphones, LogOut, Shield,
+  BookmarkCheck, CircleUserRound, Menu, Search, ShoppingBasket, UserRound, X, ChevronDown, Flame, Headphones, LogOut, Shield,
 } from 'lucide-react';
 import Brand from './Brand';
 import { useStore } from '../context/StoreContext';
@@ -11,7 +11,7 @@ import { useCatalog } from '../context/CatalogContext';
 const navItems = [
   ['/', 'Trang chủ'],
   ['/products', 'Sản phẩm'],
-  ['/products?sort=discount', 'Khuyến mãi'],
+  ['/premium-match', 'Chọn gói cho bạn'],
   ['/guide', 'Hướng dẫn'],
 ];
 
@@ -37,7 +37,7 @@ export default function Header() {
   const mobileNavState = location.pathname === '/products'
     ? new URLSearchParams(location.search).get('favorites') === 'true'
       ? 'favorites'
-      : new URLSearchParams(location.search).get('sort') === 'discount' ? 'promotions' : 'products'
+      : 'products'
     : location.pathname.slice(1) || 'home';
 
   useEffect(() => { setMobileOpen(false); setUserMenu(false); setCategoryOpen(false); }, [location.pathname, location.search]);
@@ -128,7 +128,7 @@ export default function Header() {
             <nav className="nav-links">
               {navItems.map(([to, label]) => <NavLink key={to} to={to}>{label}</NavLink>)}
             </nav>
-            <Link className="nav-promo" to="/products"><span>🔥</span> Giảm đến 50% hôm nay. Mua ngay!</Link>
+            <Link className="nav-promo" to="/products"><Flame size={18} fill="currentColor" strokeWidth={2.2} /> Giảm đến 50% hôm nay. Mua ngay!</Link>
           </div>
         </div>
       </header>
